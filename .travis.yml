@@ -6,12 +6,13 @@ sudo: false
 
 before_install:
   - go get github.com/golang/lint/golint
+  - go get github.com/urfave/cli
+  - go get gopkg.in/macaron.v1
 
 install: true
 
 script:
-  - go vet -x $(go list ./... | grep -v /vendor/)
-  - $HOME/gopath/bin/golint $(go list ./... | grep -v /vendor/)
+  - go vet -x ./...
+  - $HOME/gopath/bin/golint  ./... 
   - go test -v $(go list ./... | grep -v /vendor/)
-  - ls -al
   - ./us_test.sh
