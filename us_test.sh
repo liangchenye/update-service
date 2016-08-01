@@ -2,7 +2,8 @@
 set -e
 
 echo "start test, killing the exist 'upserver' server"
-pidof upserver | xargs kill -9
+pid=`pidof upserver` || true
+[ -z "$pid" ] || kill $pid
 
 TMPDIR=$(mktemp -d)
 TMPSTORAGE=${TMPDIR}/storage
@@ -25,20 +26,20 @@ cd ../client
 make
 cd ..
 
-echo "\nset enviornment and start to run tests"
+echo "set enviornment and start to run tests"
 export US_TEST_SERVER="appV1://localhost:1234"
 echo "---------------------------------------------"
 go test -v $(go list ./... | grep -v /vendor/)
 
-echo "\nstart to run client command line"
+echo "start to run client command line"
 echo "---------------------------------------------"
 cd client
 ./upclient push README.md "appV1://localhost:1234/citest/official"
 ./upclient pull README.md "appV1://localhost:1234/citest/official"
 
-echo "\n---------------------------------------------"
+echo "---------------------------------------------"
 echo "killing the testing 'upserver' server"
-killall upserver
+kill `pidof upserver`
 
 echo "clean all the generated data"
 rm -fr $TMPDIR
