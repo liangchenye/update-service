@@ -33,7 +33,8 @@ func loadTestData(t *testing.T) (utils.UpdateServiceStorage, string) {
 	_, path, _, _ := runtime.Caller(0)
 	realPath := filepath.Join(filepath.Dir(path), "testdata")
 
-	l, err := local.New(localPrefix + ":/" + realPath)
+	km := "local:/" + realPath
+	l, err := local.New(localPrefix+":/"+realPath, km)
 	assert.Nil(t, err, "Fail to setup a local test storage")
 
 	return l, realPath
@@ -49,7 +50,7 @@ func TestLocalBasic(t *testing.T) {
 	ok = local.Supported("localInvalid://tmp/containerops_storage_cache")
 	assert.Equal(t, ok, false, "Fail to get supported status")
 
-	l, err := local.New(validURL)
+	l, err := local.New(validURL, "")
 	assert.Nil(t, err, "Fail to setup a local storage")
 	assert.Equal(t, l.String(), validURL)
 }
@@ -61,9 +62,7 @@ func TestLocalList(t *testing.T) {
 
 	apps, _ := l.List(key)
 	for _, app := range apps {
-		if app == "appA" {
-			validCount++
-		} else if app == "appB" {
+		if app == "appA" || app == "appB" {
 			validCount++
 		}
 	}
@@ -78,7 +77,7 @@ func TestLocalPut(t *testing.T) {
 	testData := "this is test DATA, you can put in anything here"
 
 	var local UpdateServiceStorageLocal
-	l, err := local.New(localPrefix + ":/" + tmpPath)
+	l, err := local.New(localPrefix+":/"+tmpPath, "")
 	assert.Nil(t, err, "Fail to setup local repo")
 
 	invalidKey := "containerops/official"
@@ -103,7 +102,6 @@ func TestLocalGet(t *testing.T) {
 	key := "containerops/official"
 	invalidKey := "containerops/official/invalid"
 
-	l.SetKM("local:/" + kmPath)
 	defer os.RemoveAll(filepath.Join(kmPath, key, defaultKeyDir))
 	_, err := l.GetPublicKey(key)
 	assert.Nil(t, err, "Fail to load public key")

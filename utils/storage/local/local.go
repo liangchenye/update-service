@@ -52,14 +52,14 @@ func (ussl *UpdateServiceStorageLocal) Supported(url string) bool {
 }
 
 // New creates an UpdateServceStorage interface with a local implmentation
-func (ussl *UpdateServiceStorageLocal) New(url string) (utils.UpdateServiceStorage, error) {
+func (ussl *UpdateServiceStorageLocal) New(url string, km string) (utils.UpdateServiceStorage, error) {
 	parts := localRegexp.FindStringSubmatch(url)
 	if len(parts) != 3 || parts[1] != localPrefix {
 		return nil, errors.New("invalid url set in StorageLocal.New")
 	}
 
 	ussl.Path = parts[2]
-	ussl.kmURL = ""
+	ussl.kmURL = km
 
 	return ussl, nil
 }
@@ -67,13 +67,6 @@ func (ussl *UpdateServiceStorageLocal) New(url string) (utils.UpdateServiceStora
 // String returns the composed url
 func (ussl *UpdateServiceStorageLocal) String() string {
 	return fmt.Sprintf("%s:/%s", localPrefix, ussl.Path)
-}
-
-// SetKM sets the keymanager
-func (ussl *UpdateServiceStorageLocal) SetKM(kmURL string) error {
-	ussl.kmURL = kmURL
-
-	return nil
 }
 
 // Get the data of an input key. Key is "namespace/repository/appname"

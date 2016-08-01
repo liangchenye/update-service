@@ -25,12 +25,10 @@ import (
 // UpdateServiceStorage represents the storage interface
 type UpdateServiceStorage interface {
 	// url is the database address or local directory (local://tmp/cache)
-	New(url string) (UpdateServiceStorage, error)
+	New(url string, km string) (UpdateServiceStorage, error)
 	// get the 'url' set by 'New'
 	String() string
 	Supported(url string) bool
-	// set the keymanager service
-	SetKM(kmURL string) error
 	// key: namespace/repository/appname
 	Get(key string) ([]byte, error)
 	// key: namespace/repository
@@ -76,14 +74,17 @@ func RegisterStorage(name string, f UpdateServiceStorage) {
 }
 
 // NewUSStorage creates a storage interface by a url
-func NewUSStorage(url string) (UpdateServiceStorage, error) {
+func NewUSStorage(url string, km string) (UpdateServiceStorage, error) {
 	if url == "" {
 		url, _ = GetSetting("storage")
+	}
+	if km == "" {
+		km, _ = GetSetting("keymanager")
 	}
 
 	for _, f := range usStorages {
 		if f.Supported(url) {
-			return f.New(url)
+			return f.New(url, km)
 		}
 	}
 

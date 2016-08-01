@@ -46,7 +46,7 @@ func (app *UpdateServiceProtocalAppV1) New(protocal string) (utils.UpdateService
 
 	//FIXME: read from config
 	var err error
-	app.storage, err = utils.NewUSStorage("")
+	app.storage, err = utils.NewUSStorage("", "")
 	if err != nil {
 		return nil, err
 	}
