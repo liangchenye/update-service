@@ -42,7 +42,7 @@ func getTestURL() string {
 
 // TestInitConfig tests the Init function
 func TestInitConfig(t *testing.T) {
-	var appV1 DyUpdaterClientAppV1Repo
+	var appV1 UpdateClientAppV1Repo
 
 	invalidURL := "appInvalid://containerops.me/containerops/official"
 	_, err := appV1.New(invalidURL)
@@ -62,7 +62,7 @@ func TestInitConfig(t *testing.T) {
 
 // TestOper tests add/get/getmeta/getmetasign/list
 func TestOper(t *testing.T) {
-	var appV1 DyUpdaterClientAppV1Repo
+	var appV1 UpdateClientAppV1Repo
 
 	validURL := getTestURL()
 

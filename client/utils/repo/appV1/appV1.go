@@ -38,17 +38,17 @@ var (
 	repoRegexp = regexp.MustCompile(`^(.+)://(.+)/(.+)/(.+)$`)
 )
 
-type DyUpdaterClientAppV1Repo struct {
+type UpdateClientAppV1Repo struct {
 	Site      string
 	Namespace string
 	Repo      string
 }
 
 func init() {
-	duc_utils.RegisterRepo(appV1Prefix, &DyUpdaterClientAppV1Repo{})
+	duc_utils.RegisterRepo(appV1Prefix, &UpdateClientAppV1Repo{})
 }
 
-func (ap *DyUpdaterClientAppV1Repo) Supported(url string) bool {
+func (ap *UpdateClientAppV1Repo) Supported(url string) bool {
 	return strings.HasPrefix(url, appV1Prefix+"://")
 }
 
@@ -56,7 +56,7 @@ func (ap *DyUpdaterClientAppV1Repo) Supported(url string) bool {
 //	Site:       "liangchenye.me"
 //      Namespace:  "liangchenye"
 //      Repo:       "offical"
-func (ap *DyUpdaterClientAppV1Repo) New(url string) (duc_utils.DyUpdaterClientRepo, error) {
+func (ap *UpdateClientAppV1Repo) New(url string) (duc_utils.UpdateClientRepo, error) {
 	parts := repoRegexp.FindStringSubmatch(url)
 	if len(parts) != 5 || parts[1] != appV1Prefix {
 		return nil, duc_utils.ErrorsDURRepoInvalid
@@ -70,20 +70,20 @@ func (ap *DyUpdaterClientAppV1Repo) New(url string) (duc_utils.DyUpdaterClientRe
 }
 
 // 'namespace/repo'
-func (ap DyUpdaterClientAppV1Repo) NRString() string {
+func (ap UpdateClientAppV1Repo) NRString() string {
 	return fmt.Sprintf("%s/%s", ap.Namespace, ap.Repo)
 }
 
-func (ap DyUpdaterClientAppV1Repo) String() string {
+func (ap UpdateClientAppV1Repo) String() string {
 	return fmt.Sprintf("%s://%s/%s/%s", appV1Prefix, ap.Site, ap.Namespace, ap.Repo)
 }
 
-func (ap DyUpdaterClientAppV1Repo) generateURL() string {
+func (ap UpdateClientAppV1Repo) generateURL() string {
 	//FIXME: only support http
 	return fmt.Sprintf("http://%s/%s/%s/%s", ap.Site, appV1Restful, ap.Namespace, ap.Repo)
 }
 
-func (ap DyUpdaterClientAppV1Repo) List() ([]string, error) {
+func (ap UpdateClientAppV1Repo) List() ([]string, error) {
 	url := ap.generateURL()
 	resp, err := http.Get(url)
 	if err != nil {
@@ -91,7 +91,7 @@ func (ap DyUpdaterClientAppV1Repo) List() ([]string, error) {
 	}
 	defer resp.Body.Close()
 
-	resp_body, err := ioutil.ReadAll(resp.Body)
+	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +106,7 @@ func (ap DyUpdaterClientAppV1Repo) List() ([]string, error) {
 	}
 
 	var ret httpRet
-	err = json.Unmarshal(resp_body, &ret)
+	err = json.Unmarshal(respBody, &ret)
 	if err != nil {
 		return nil, err
 	}
@@ -114,34 +114,34 @@ func (ap DyUpdaterClientAppV1Repo) List() ([]string, error) {
 	return ret.Content, nil
 }
 
-func (ap DyUpdaterClientAppV1Repo) GetFile(name string) ([]byte, error) {
+func (ap UpdateClientAppV1Repo) GetFile(name string) ([]byte, error) {
 	url := fmt.Sprintf("%s/blob/%s", ap.generateURL(), name)
 	return ap.getFromURL(url)
 }
 
-func (ap DyUpdaterClientAppV1Repo) GetMetaSign() ([]byte, error) {
+func (ap UpdateClientAppV1Repo) GetMetaSign() ([]byte, error) {
 	url := fmt.Sprintf("%s/metasign", ap.generateURL())
 	return ap.getFromURL(url)
 }
 
-func (ap DyUpdaterClientAppV1Repo) GetMeta() ([]byte, error) {
+func (ap UpdateClientAppV1Repo) GetMeta() ([]byte, error) {
 	url := fmt.Sprintf("%s/meta", ap.generateURL())
 	return ap.getFromURL(url)
 }
 
-func (ap DyUpdaterClientAppV1Repo) GetPublicKey() ([]byte, error) {
+func (ap UpdateClientAppV1Repo) GetPublicKey() ([]byte, error) {
 	url := fmt.Sprintf("%s/pubkey", ap.generateURL())
 	return ap.getFromURL(url)
 }
 
-func (ap DyUpdaterClientAppV1Repo) getFromURL(url string) ([]byte, error) {
+func (ap UpdateClientAppV1Repo) getFromURL(url string) ([]byte, error) {
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	resp_body, err := ioutil.ReadAll(resp.Body)
+	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -150,10 +150,10 @@ func (ap DyUpdaterClientAppV1Repo) getFromURL(url string) ([]byte, error) {
 		return nil, errors.New(resp.Status)
 	}
 
-	return resp_body, nil
+	return respBody, nil
 }
 
-func (ap DyUpdaterClientAppV1Repo) Put(name string, content []byte) error {
+func (ap UpdateClientAppV1Repo) Put(name string, content []byte) error {
 	url := fmt.Sprintf("%s/%s", ap.generateURL(), name)
 	body := bytes.NewBuffer(content)
 	resp, err := http.Post(url, "application/appv1", body)

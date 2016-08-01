@@ -181,7 +181,7 @@ func (r Repo) Get(name string) ([]byte, error) {
 		return nil, err
 	}
 
-	for i, _ := range metas {
+	for i := range metas {
 		if metas[i].Name != name {
 			continue
 		}
@@ -233,7 +233,7 @@ func (r Repo) Add(name string, content []byte) error {
 
 	// get meta content
 	exist := false
-	for i, _ := range metas {
+	for i := range metas {
 		if metas[i].Name == name {
 			metas[i] = meta
 			exist = true
@@ -302,7 +302,7 @@ func (r Repo) Remove(name string) error {
 		return err
 	}
 
-	for i, _ := range metas {
+	for i := range metas {
 		if metas[i].Name != name {
 			continue
 		}

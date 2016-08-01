@@ -45,7 +45,7 @@ func GetSetting(key string) (string, error) {
 
 	if v, ok := dusSettings[key]; ok {
 		return v, nil
-	} else {
-		return "", errors.New("setting key is not exist")
 	}
+
+	return "", errors.New("setting key is not exist")
 }

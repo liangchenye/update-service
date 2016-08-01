@@ -45,12 +45,12 @@ type UpdateClientConfig struct {
 	Repos         []string
 }
 
-func (dyc *UpdateClientConfig) exist() bool {
+func (ucc *UpdateClientConfig) exist() bool {
 	configFile := filepath.Join(os.Getenv("HOME"), topDir, configName)
 	return dyutils.IsFileExist(configFile)
 }
 
-func (dyc *UpdateClientConfig) Init() error {
+func (ucc *UpdateClientConfig) Init() error {
 	homeDir := os.Getenv("HOME")
 	if homeDir == "" {
 		return errors.New("Cannot get home directory")
@@ -64,16 +64,16 @@ func (dyc *UpdateClientConfig) Init() error {
 		}
 	}
 
-	dyc.CacheDir = cacheURL
+	ucc.CacheDir = cacheURL
 
-	if !dyc.exist() {
-		return dyc.save()
+	if !ucc.exist() {
+		return ucc.save()
 	}
 	return nil
 }
 
-func (dyc *UpdateClientConfig) save() error {
-	data, err := json.MarshalIndent(dyc, "", "\t")
+func (ucc *UpdateClientConfig) save() error {
+	data, err := json.MarshalIndent(ucc, "", "\t")
 	if err != nil {
 		return err
 	}
@@ -86,7 +86,7 @@ func (dyc *UpdateClientConfig) save() error {
 	return nil
 }
 
-func (dyc *UpdateClientConfig) Load() error {
+func (ucc *UpdateClientConfig) Load() error {
 	homeDir := os.Getenv("HOME")
 	if homeDir == "" {
 		return errors.New("Cannot get home directory")
@@ -97,59 +97,59 @@ func (dyc *UpdateClientConfig) Load() error {
 		return err
 	}
 
-	if err := json.Unmarshal(content, &dyc); err != nil {
+	if err := json.Unmarshal(content, &ucc); err != nil {
 		return err
 	}
 
-	if dyc.CacheDir == "" {
-		dyc.CacheDir = filepath.Join(homeDir, topDir, cacheDir)
+	if ucc.CacheDir == "" {
+		ucc.CacheDir = filepath.Join(homeDir, topDir, cacheDir)
 	}
 
 	return nil
 }
 
-func (dyc *UpdateClientConfig) Add(url string) error {
+func (ucc *UpdateClientConfig) Add(url string) error {
 	if url == "" {
 		return ErrorsUCEmptyURL
 	}
 
 	var err error
-	if !dyc.exist() {
-		err = dyc.Init()
+	if !ucc.exist() {
+		err = ucc.Init()
 	} else {
-		err = dyc.Load()
+		err = ucc.Load()
 	}
 	if err != nil {
 		return err
 	}
 
-	for _, repo := range dyc.Repos {
+	for _, repo := range ucc.Repos {
 		if repo == url {
 			return ErrorsUCRepoExist
 		}
 	}
-	dyc.Repos = append(dyc.Repos, url)
+	ucc.Repos = append(ucc.Repos, url)
 
-	return dyc.save()
+	return ucc.save()
 }
 
-func (dyc *UpdateClientConfig) Remove(url string) error {
+func (ucc *UpdateClientConfig) Remove(url string) error {
 	if url == "" {
 		return ErrorsUCEmptyURL
 	}
 
-	if !dyc.exist() {
+	if !ucc.exist() {
 		return ErrorsUCRepoNotExist
 	}
 
-	if err := dyc.Load(); err != nil {
+	if err := ucc.Load(); err != nil {
 		return err
 	}
 	found := false
-	for i, _ := range dyc.Repos {
-		if dyc.Repos[i] == url {
+	for i := range ucc.Repos {
+		if ucc.Repos[i] == url {
 			found = true
-			dyc.Repos = append(dyc.Repos[:i], dyc.Repos[i+1:]...)
+			ucc.Repos = append(ucc.Repos[:i], ucc.Repos[i+1:]...)
 			break
 		}
 	}
@@ -157,5 +157,5 @@ func (dyc *UpdateClientConfig) Remove(url string) error {
 		return ErrorsUCRepoNotExist
 	}
 
-	return dyc.save()
+	return ucc.save()
 }

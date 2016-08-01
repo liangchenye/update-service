@@ -40,10 +40,9 @@ var initCommand = cli.Command{
 		if err := ucc.Init(); err != nil {
 			fmt.Println(err)
 			return err
-		} else {
-			fmt.Println("Success in initiating Dockyard Updater Client configuration.")
 		}
 
+		fmt.Println("Success in initiating Dockyard Updater Client configuration.")
 		return nil
 	},
 }
@@ -55,16 +54,18 @@ var addCommand = cli.Command{
 	Action: func(context *cli.Context) error {
 		var ucc cutils.UpdateClientConfig
 
-		if repo, err := cutils.NewDUCRepo(context.Args().Get(0)); err != nil {
+		repo, err := cutils.NewDUCRepo(context.Args().Get(0))
+		if err != nil {
 			fmt.Println(err)
 			return err
-		} else if err := ucc.Add(repo.String()); err != nil {
-			fmt.Println(err)
-			return err
-		} else {
-			fmt.Printf("Success in adding %s.\n", repo.String())
 		}
 
+		if err := ucc.Add(repo.String()); err != nil {
+			fmt.Println(err)
+			return err
+		}
+
+		fmt.Printf("Success in adding %s.\n", repo.String())
 		return nil
 	},
 }
@@ -76,16 +77,18 @@ var removeCommand = cli.Command{
 	Action: func(context *cli.Context) error {
 		var ucc cutils.UpdateClientConfig
 
-		if repo, err := cutils.NewDUCRepo(context.Args().Get(0)); err != nil {
+		repo, err := cutils.NewDUCRepo(context.Args().Get(0))
+		if err != nil {
 			fmt.Println(err)
 			return err
-		} else if err := ucc.Remove(repo.String()); err != nil {
-			fmt.Println(err)
-			return err
-		} else {
-			fmt.Printf("Success in removing %s.\n", repo.String())
 		}
 
+		if err := ucc.Remove(repo.String()); err != nil {
+			fmt.Println(err)
+			return err
+		}
+
+		fmt.Printf("Success in removing %s.\n", repo.String())
 		return nil
 	},
 }
@@ -101,28 +104,29 @@ var listCommand = cli.Command{
 			if err := ucc.Load(); err != nil {
 				fmt.Println(err)
 				return err
-			} else {
-				for _, repo := range ucc.Repos {
-					fmt.Println(repo)
-				}
+			}
+
+			for _, repo := range ucc.Repos {
+				fmt.Println(repo)
 			}
 		} else if len(context.Args()) == 1 {
-			if repo, err := cutils.NewDUCRepo(context.Args().Get(0)); err != nil {
+			repo, err := cutils.NewDUCRepo(context.Args().Get(0))
+			if err != nil {
 				fmt.Println(err)
 				return err
-			} else {
-				apps, err := repo.List()
-				if err != nil {
-					fmt.Println(err)
-					return err
-				}
-				for _, app := range apps {
-					fmt.Println(app)
-				}
-				ucc.Add(repo.String())
 			}
-		}
 
+			apps, err := repo.List()
+			if err != nil {
+				fmt.Println(err)
+				return err
+			}
+
+			for _, app := range apps {
+				fmt.Println(app)
+			}
+			ucc.Add(repo.String())
+		}
 		return nil
 	},
 }
@@ -242,7 +246,7 @@ var pullCommand = cli.Command{
 				fmt.Println("Congratulations! The file is valid!")
 				return nil
 			} else {
-				err := errors.New("the file is invalid, maybe security issue!")
+				err := errors.New("the file is invalid, maybe security issue")
 				fmt.Println(err)
 				return err
 			}

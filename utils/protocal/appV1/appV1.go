@@ -18,7 +18,6 @@ package appV1
 
 import (
 	"github.com/liangchenye/update-service/utils"
-	_ "github.com/liangchenye/update-service/utils/storage/local"
 )
 
 const (

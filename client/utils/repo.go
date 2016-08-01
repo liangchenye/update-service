@@ -22,9 +22,9 @@ import (
 	"sync"
 )
 
-type DyUpdaterClientRepo interface {
+type UpdateClientRepo interface {
 	Supported(url string) bool
-	New(url string) (DyUpdaterClientRepo, error)
+	New(url string) (UpdateClientRepo, error)
 	List() ([]string, error)
 	GetFile(name string) ([]byte, error)
 	GetPublicKey() ([]byte, error)
@@ -37,7 +37,7 @@ type DyUpdaterClientRepo interface {
 
 var (
 	ducReposLock sync.Mutex
-	ducRepos     = make(map[string]DyUpdaterClientRepo)
+	ducRepos     = make(map[string]UpdateClientRepo)
 
 	ErrorsDURRepoInvalid      = errors.New("repository is invalid")
 	ErrorsDURRepoNotSupported = errors.New("repository protocal is not supported")
@@ -48,7 +48,7 @@ var (
 //
 // If RegisterRepo is called twice with the same name if Repo is nil,
 // or if the name is blank, it panics.
-func RegisterRepo(name string, f DyUpdaterClientRepo) {
+func RegisterRepo(name string, f UpdateClientRepo) {
 	if name == "" {
 		panic("Could not register a Repo with an empty name")
 	}
@@ -65,7 +65,7 @@ func RegisterRepo(name string, f DyUpdaterClientRepo) {
 	ducRepos[name] = f
 }
 
-func NewDUCRepo(url string) (DyUpdaterClientRepo, error) {
+func NewDUCRepo(url string) (UpdateClientRepo, error) {
 	for _, f := range ducRepos {
 		if f.Supported(url) {
 			return f.New(url)

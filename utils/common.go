@@ -38,11 +38,9 @@ func IsDirExist(path string) bool {
 
 	if err != nil {
 		return os.IsExist(err)
-	} else {
-		return fi.IsDir()
 	}
 
-	panic("not reached")
+	return fi.IsDir()
 }
 
 func IsFileExist(filename string) bool {

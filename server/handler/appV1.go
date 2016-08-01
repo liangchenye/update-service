@@ -69,9 +69,9 @@ func AppGetPublicKeyV1Handler(ctx *macaron.Context) (int, []byte) {
 	data, err := appV1.GetPublicKey(namespace + "/" + repository)
 	if err == nil {
 		return http.StatusOK, data
-	} else {
-		return httpRet("AppV1 Get Public Key", nil, err)
 	}
+
+	return httpRet("AppV1 Get Public Key", nil, err)
 }
 
 // Get the meta data of all the namespace/repository
@@ -83,9 +83,9 @@ func AppGetMetaV1Handler(ctx *macaron.Context) (int, []byte) {
 	data, err := appV1.GetMeta(namespace + "/" + repository)
 	if err == nil {
 		return http.StatusOK, data
-	} else {
-		return httpRet("AppV1 Get Meta", nil, err)
 	}
+
+	return httpRet("AppV1 Get Meta", nil, err)
 }
 
 // Get the meta signature data of all the namespace/repository
@@ -97,9 +97,9 @@ func AppGetMetaSignV1Handler(ctx *macaron.Context) (int, []byte) {
 	data, err := appV1.GetMetaSign(namespace + "/" + repository)
 	if err == nil {
 		return http.StatusOK, data
-	} else {
-		return httpRet("AppV1 Get Meta Sign", data, err)
 	}
+
+	return httpRet("AppV1 Get Meta Sign", data, err)
 }
 
 // Get the content of a certain app
@@ -112,9 +112,9 @@ func AppGetFileV1Handler(ctx *macaron.Context) (int, []byte) {
 	data, err := appV1.Get(namespace+"/"+repository, name)
 	if err == nil {
 		return http.StatusOK, data
-	} else {
-		return httpRet("AppV1 Get File", nil, err)
 	}
+
+	return httpRet("AppV1 Get File", nil, err)
 }
 
 // Post the content of a certain app
