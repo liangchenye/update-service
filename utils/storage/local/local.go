@@ -35,6 +35,7 @@ var (
 	localRegexp = regexp.MustCompile(`^(.+):/(.+)$`)
 )
 
+// UpdateServiceStorageLocal is the local file implementation of storage service
 type UpdateServiceStorageLocal struct {
 	Path string
 
@@ -45,10 +46,12 @@ func init() {
 	utils.RegisterStorage(localPrefix, &UpdateServiceStorageLocal{})
 }
 
+// Supported checks if a url begin with 'local://'
 func (ussl *UpdateServiceStorageLocal) Supported(url string) bool {
 	return strings.HasPrefix(url, localPrefix+"://")
 }
 
+// New creates an UpdateServceStorage interface with a local implmentation
 func (ussl *UpdateServiceStorageLocal) New(url string) (utils.UpdateServiceStorage, error) {
 	parts := localRegexp.FindStringSubmatch(url)
 	if len(parts) != 3 || parts[1] != localPrefix {
@@ -61,17 +64,19 @@ func (ussl *UpdateServiceStorageLocal) New(url string) (utils.UpdateServiceStora
 	return ussl, nil
 }
 
+// String returns the composed url
 func (ussl *UpdateServiceStorageLocal) String() string {
 	return fmt.Sprintf("%s:/%s", localPrefix, ussl.Path)
 }
 
+// SetKM sets the keymanager
 func (ussl *UpdateServiceStorageLocal) SetKM(kmURL string) error {
 	ussl.kmURL = kmURL
 
 	return nil
 }
 
-// Key is "namespace/repository/appname"
+// Get the data of an input key. Key is "namespace/repository/appname"
 func (ussl *UpdateServiceStorageLocal) Get(key string) ([]byte, error) {
 	s := strings.Split(key, "/")
 	if len(s) != 3 {
@@ -86,7 +91,7 @@ func (ussl *UpdateServiceStorageLocal) Get(key string) ([]byte, error) {
 	return r.Get(s[2])
 }
 
-// Key is "namespace/repository"
+// GetMeta gets the metadata of an input key. Key is "namespace/repository"
 func (ussl *UpdateServiceStorageLocal) GetMeta(key string) ([]byte, error) {
 	s := strings.Split(key, "/")
 	if len(s) != 2 {
@@ -101,7 +106,7 @@ func (ussl *UpdateServiceStorageLocal) GetMeta(key string) ([]byte, error) {
 	return r.GetMeta()
 }
 
-// Key is "namespace/repository"
+// GetMetaSign gets the meta signature data. Key is "namespace/repository"
 func (ussl *UpdateServiceStorageLocal) GetMetaSign(key string) ([]byte, error) {
 	s := strings.Split(key, "/")
 	if len(s) != 2 {
@@ -117,7 +122,7 @@ func (ussl *UpdateServiceStorageLocal) GetMetaSign(key string) ([]byte, error) {
 	return ioutil.ReadFile(file)
 }
 
-// Key is "namespace/repository"
+// GetPublicKey gets the public key data. Key is "namespace/repository"
 func (ussl *UpdateServiceStorageLocal) GetPublicKey(key string) ([]byte, error) {
 	s := strings.Split(key, "/")
 	if len(s) != 2 {
@@ -133,7 +138,7 @@ func (ussl *UpdateServiceStorageLocal) GetPublicKey(key string) ([]byte, error) 
 	return ioutil.ReadFile(file)
 }
 
-// Key is "namespace/repository/appname"
+// Put adds a file with a key. Key is "namespace/repository/appname"
 func (ussl *UpdateServiceStorageLocal) Put(key string, content []byte) error {
 	s := strings.Split(key, "/")
 	if len(s) != 3 {
@@ -147,7 +152,7 @@ func (ussl *UpdateServiceStorageLocal) Put(key string, content []byte) error {
 	return r.Add(s[2], content)
 }
 
-// Key is "namespace/repository"
+// Delete removes a file by a key. Key is "namespace/repository"
 func (ussl *UpdateServiceStorageLocal) Delete(key string) error {
 	s := strings.Split(key, "/")
 	if len(s) != 2 {
@@ -162,7 +167,7 @@ func (ussl *UpdateServiceStorageLocal) Delete(key string) error {
 	return r.Remove(s[2])
 }
 
-// Key is "namespace/repository"
+// List lists the content of a key. Key is "namespace/repository"
 func (ussl *UpdateServiceStorageLocal) List(key string) ([]string, error) {
 	s := strings.Split(key, "/")
 	if len(s) != 2 {

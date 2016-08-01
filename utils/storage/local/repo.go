@@ -29,10 +29,13 @@ import (
 )
 
 var (
-	urlRegexp             = regexp.MustCompile(`^(.+)/(.+)/(.+)$`)
+	urlRegexp = regexp.MustCompile(`^(.+)/(.+)/(.+)$`)
+	// ErrorInvalidLocalRepo occurs when a local url is invalid
 	ErrorInvalidLocalRepo = errors.New("Invalid local url")
-	ErrorEmptyRepo        = errors.New("Repo is empty")
-	ErrorAppNotExist      = errors.New("App is not exist")
+	// ErrorEmptyRepo occurs when a repo is empty
+	ErrorEmptyRepo = errors.New("Repo is empty")
+	// ErrorAppNotExist occurs when an app is not exist
+	ErrorAppNotExist = errors.New("App is not exist")
 )
 
 const (
@@ -43,6 +46,7 @@ const (
 	defaultTargetDir = "target"
 )
 
+// Repo reprensents a local repository
 type Repo struct {
 	Path       string
 	Namespace  string
@@ -51,8 +55,8 @@ type Repo struct {
 	kmURL string
 }
 
+// NewRepo gets repo by a local storage path and a url
 // url : "namespace/repository"
-// kmURL: nil means using the km repository defined in configuration
 func NewRepo(path string, url string) (Repo, error) {
 	parts := strings.Split(url, "/")
 	if len(parts) != 2 {
@@ -73,6 +77,10 @@ func NewRepo(path string, url string) (Repo, error) {
 	return repo, nil
 }
 
+// NewRepoWithKM gets repo by a local storage path, a url and
+//   a keymanager url
+// url : "namespace/repository"
+// kmURL: nil means using the km repository defined in configuration
 func NewRepoWithKM(path string, url string, kmURL string) (Repo, error) {
 	// if kmURL == "", try the one in setting
 	if kmURL == "" {
@@ -94,6 +102,7 @@ func NewRepoWithKM(path string, url string, kmURL string) (Repo, error) {
 	return repo, nil
 }
 
+// SetKM sets the keymanager
 func (r *Repo) SetKM(kmURL string) error {
 	// pull the public key
 	km, err := utils.NewKeyManager(kmURL)
@@ -120,22 +129,27 @@ func (r *Repo) SetKM(kmURL string) error {
 	return nil
 }
 
+// GetTopDir gets the top directory of a repository
 func (r Repo) GetTopDir() string {
 	return filepath.Join(r.Path, r.Namespace, r.Repository)
 }
 
+// GetMetaFile gets the meta data file url of repository
 func (r Repo) GetMetaFile() string {
 	return filepath.Join(r.Path, r.Namespace, r.Repository, defaultMeta)
 }
 
+// GetMetaSignFile gets the meta signature file url of repository
 func (r Repo) GetMetaSignFile() string {
 	return filepath.Join(r.Path, r.Namespace, r.Repository, defaultMetaSign)
 }
 
+// GetPublicKeyFile gets the public key file url of repository
 func (r Repo) GetPublicKeyFile() string {
 	return filepath.Join(r.Path, r.Namespace, r.Repository, defaultKeyDir, defaultPubKey)
 }
 
+// GetMeta gets the meta data of a repository
 func (r Repo) GetMeta() ([]byte, error) {
 	metaFile := r.GetMetaFile()
 	if !utils.IsFileExist(metaFile) {
@@ -145,6 +159,7 @@ func (r Repo) GetMeta() ([]byte, error) {
 	return ioutil.ReadFile(metaFile)
 }
 
+// List lists the applications inside a repository
 func (r Repo) List() ([]string, error) {
 	data, err := r.GetMeta()
 	if err != nil {
@@ -165,6 +180,7 @@ func (r Repo) List() ([]string, error) {
 	return files, nil
 }
 
+// Get gets the data of an application
 func (r Repo) Get(name string) ([]byte, error) {
 	var metas []utils.Meta
 	metaFile := r.GetMetaFile()
@@ -193,6 +209,7 @@ func (r Repo) Get(name string) ([]byte, error) {
 	return nil, ErrorAppNotExist
 }
 
+// Add adds an application to a repository
 func (r Repo) Add(name string, content []byte) error {
 	topDir := r.GetTopDir()
 	if !utils.IsDirExist(topDir) {
@@ -286,6 +303,7 @@ func (r Repo) saveSign(metasContent []byte) error {
 	return nil
 }
 
+// Remove removes an application from a repository
 func (r Repo) Remove(name string) error {
 	var metas []utils.Meta
 	metaFile := r.GetMetaFile()

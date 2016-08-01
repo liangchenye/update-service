@@ -245,11 +245,11 @@ var pullCommand = cli.Command{
 			if meta.Hash == fileHash {
 				fmt.Println("Congratulations! The file is valid!")
 				return nil
-			} else {
-				err := errors.New("the file is invalid, maybe security issue")
-				fmt.Println(err)
-				return err
 			}
+
+			err := errors.New("the file is invalid, maybe security issue")
+			fmt.Println(err)
+			return err
 		}
 
 		err = errors.New("something wrong with the server, cannot find the file in the meta data")
