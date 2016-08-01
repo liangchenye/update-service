@@ -22,7 +22,7 @@ import (
 	h "github.com/liangchenye/update-service/server/handler"
 )
 
-// Dockyard Updater Server Router Definition
+// SetRouters is the Dockyard Updater Server Router Definition
 func SetRouters(m *macaron.Macaron) {
 	// Web API
 	m.Get("/", h.IndexMetaV1Handler)

@@ -22,6 +22,7 @@ import (
 	"sync"
 )
 
+// UpdateClientRepo reprensents the local repo interface
 type UpdateClientRepo interface {
 	Supported(url string) bool
 	New(url string) (UpdateClientRepo, error)
@@ -36,11 +37,13 @@ type UpdateClientRepo interface {
 }
 
 var (
-	ducReposLock sync.Mutex
-	ducRepos     = make(map[string]UpdateClientRepo)
+	ucReposLock sync.Mutex
+	ucRepos     = make(map[string]UpdateClientRepo)
 
-	ErrorsDURRepoInvalid      = errors.New("repository is invalid")
-	ErrorsDURRepoNotSupported = errors.New("repository protocal is not supported")
+	// ErrorsUCRepoInvalid occurs when a repository is invalid
+	ErrorsUCRepoInvalid = errors.New("repository is invalid")
+	// ErrorsUCRepoNotSupported occurs when a url is not supported by existed implementations
+	ErrorsUCRepoNotSupported = errors.New("repository protocal is not supported")
 )
 
 // RegisterRepo provides a way to dynamically register an implementation of a
@@ -56,21 +59,22 @@ func RegisterRepo(name string, f UpdateClientRepo) {
 		panic("Could not register a nil Repo")
 	}
 
-	ducReposLock.Lock()
-	defer ducReposLock.Unlock()
+	ucReposLock.Lock()
+	defer ucReposLock.Unlock()
 
-	if _, alreadyExists := ducRepos[name]; alreadyExists {
+	if _, alreadyExists := ucRepos[name]; alreadyExists {
 		panic(fmt.Sprintf("Repo type '%s' is already registered", name))
 	}
-	ducRepos[name] = f
+	ucRepos[name] = f
 }
 
-func NewDUCRepo(url string) (UpdateClientRepo, error) {
-	for _, f := range ducRepos {
+// NewUCRepo creates a update client repo by a url
+func NewUCRepo(url string) (UpdateClientRepo, error) {
+	for _, f := range ucRepos {
 		if f.Supported(url) {
 			return f.New(url)
 		}
 	}
 
-	return nil, ErrorsDURRepoNotSupported
+	return nil, ErrorsUCRepoNotSupported
 }

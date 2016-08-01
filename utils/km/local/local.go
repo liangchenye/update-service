@@ -40,6 +40,7 @@ var (
 	localRegexp = regexp.MustCompile(`^local:/(.+)$`)
 )
 
+// KeyManagerLocal is the local implementation of a key manager
 type KeyManagerLocal struct {
 	Path string
 }
@@ -48,10 +49,12 @@ func init() {
 	utils.RegisterKeyManager(localPrefix, &KeyManagerLocal{})
 }
 
+// Supported checks if a local url begin with "local://"
 func (kml *KeyManagerLocal) Supported(url string) bool {
 	return strings.HasPrefix(url, localPrefix+"://")
 }
 
+// New returns a keymanager by a url
 func (kml *KeyManagerLocal) New(url string) (utils.KeyManager, error) {
 	parts := localRegexp.FindStringSubmatch(url)
 	if len(parts) != 2 {
@@ -62,6 +65,7 @@ func (kml *KeyManagerLocal) New(url string) (utils.KeyManager, error) {
 	return kml, nil
 }
 
+// GetPublicKey gets the public key data of a namespace/repository
 func (kml *KeyManagerLocal) GetPublicKey(nr string) ([]byte, error) {
 	keyDir := filepath.Join(kml.Path, nr, defaultKeyDirName)
 	if !isKeyExist(keyDir) {
@@ -74,6 +78,7 @@ func (kml *KeyManagerLocal) GetPublicKey(nr string) ([]byte, error) {
 	return ioutil.ReadFile(filepath.Join(keyDir, defaultPublicKey))
 }
 
+// Sign signs a data of a namespace/repository
 func (kml *KeyManagerLocal) Sign(nr string, data []byte) ([]byte, error) {
 	keyDir := filepath.Join(kml.Path, nr, defaultKeyDirName)
 	if !isKeyExist(keyDir) {

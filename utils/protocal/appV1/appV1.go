@@ -24,6 +24,7 @@ const (
 	appV1Prefix = "appV1"
 )
 
+// UpdateServiceProtocalAppV1 is the appV1 implementation of the update service protocal
 type UpdateServiceProtocalAppV1 struct {
 	storage utils.UpdateServiceStorage
 }
@@ -32,10 +33,12 @@ func init() {
 	utils.RegisterProtocal(appV1Prefix, &UpdateServiceProtocalAppV1{})
 }
 
+// Supported checks if a protocal is 'appV1'
 func (app *UpdateServiceProtocalAppV1) Supported(protocal string) bool {
 	return protocal == appV1Prefix
 }
 
+// New creates a usp interface by an appV1 protocal
 func (app *UpdateServiceProtocalAppV1) New(protocal string) (utils.UpdateServiceProtocal, error) {
 	if protocal != appV1Prefix {
 		return nil, utils.ErrorsUSPNotSupported
@@ -51,28 +54,34 @@ func (app *UpdateServiceProtocalAppV1) New(protocal string) (utils.UpdateService
 	return app, nil
 }
 
+// Put adds a appV1 file to a repository
 func (app *UpdateServiceProtocalAppV1) Put(nr, name string, data []byte) error {
 	key := nr + "/" + name
 	return app.storage.Put(key, data)
 }
 
+// Get gets the appV1 file data of a repository
 func (app *UpdateServiceProtocalAppV1) Get(nr, name string) ([]byte, error) {
 	key := nr + "/" + name
 	return app.storage.Get(key)
 }
 
+// List lists the applications of a repository
 func (app *UpdateServiceProtocalAppV1) List(nr string) ([]string, error) {
 	return app.storage.List(nr)
 }
 
+// GetPublicKey returns the public key data of a repository
 func (app *UpdateServiceProtocalAppV1) GetPublicKey(nr string) ([]byte, error) {
 	return app.storage.GetPublicKey(nr)
 }
 
+// GetMeta returns the meta data of a repository
 func (app *UpdateServiceProtocalAppV1) GetMeta(nr string) ([]byte, error) {
 	return app.storage.GetMeta(nr)
 }
 
+// GetMetaSign returns the meta signature data of a repository
 func (app *UpdateServiceProtocalAppV1) GetMetaSign(nr string) ([]byte, error) {
 	return app.storage.GetMetaSign(nr)
 }

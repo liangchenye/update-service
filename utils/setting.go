@@ -22,28 +22,30 @@ import (
 )
 
 var (
-	dusSettingsLock sync.Mutex
-	dusSettings     = make(map[string]string)
+	dsSettingsLock sync.Mutex
+	dsSettings     = make(map[string]string)
 )
 
+// SetSetting sets the value by a key
 func SetSetting(key string, value string) error {
 	if key == "" {
 		return errors.New("setting key should not be empty")
 	}
 
-	dusSettingsLock.Lock()
-	defer dusSettingsLock.Unlock()
+	dsSettingsLock.Lock()
+	defer dsSettingsLock.Unlock()
 
-	dusSettings[key] = value
+	dsSettings[key] = value
 	return nil
 }
 
+// GetSetting gets the value from a key
 func GetSetting(key string) (string, error) {
 	if key == "" {
 		return "", errors.New("setting key should not be empty")
 	}
 
-	if v, ok := dusSettings[key]; ok {
+	if v, ok := dsSettings[key]; ok {
 		return v, nil
 	}
 

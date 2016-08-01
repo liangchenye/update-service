@@ -54,7 +54,7 @@ var addCommand = cli.Command{
 	Action: func(context *cli.Context) error {
 		var ucc cutils.UpdateClientConfig
 
-		repo, err := cutils.NewDUCRepo(context.Args().Get(0))
+		repo, err := cutils.NewUCRepo(context.Args().Get(0))
 		if err != nil {
 			fmt.Println(err)
 			return err
@@ -77,7 +77,7 @@ var removeCommand = cli.Command{
 	Action: func(context *cli.Context) error {
 		var ucc cutils.UpdateClientConfig
 
-		repo, err := cutils.NewDUCRepo(context.Args().Get(0))
+		repo, err := cutils.NewUCRepo(context.Args().Get(0))
 		if err != nil {
 			fmt.Println(err)
 			return err
@@ -110,7 +110,7 @@ var listCommand = cli.Command{
 				fmt.Println(repo)
 			}
 		} else if len(context.Args()) == 1 {
-			repo, err := cutils.NewDUCRepo(context.Args().Get(0))
+			repo, err := cutils.NewUCRepo(context.Args().Get(0))
 			if err != nil {
 				fmt.Println(err)
 				return err
@@ -143,7 +143,7 @@ var pushCommand = cli.Command{
 			return err
 		}
 
-		repo, err := cutils.NewDUCRepo(context.Args().Get(1))
+		repo, err := cutils.NewUCRepo(context.Args().Get(1))
 		if err != nil {
 			fmt.Println(err)
 			return err
@@ -177,7 +177,7 @@ var pullCommand = cli.Command{
 			return err
 		}
 
-		repo, err := cutils.NewDUCRepo(context.Args().Get(1))
+		repo, err := cutils.NewUCRepo(context.Args().Get(1))
 		if err != nil {
 			fmt.Println(err)
 			return err

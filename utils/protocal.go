@@ -22,6 +22,7 @@ import (
 	"sync"
 )
 
+// UpdateServiceProtocal represents the update service interface
 type UpdateServiceProtocal interface {
 	Supported(protocal string) bool
 	New(protocal string) (UpdateServiceProtocal, error)
@@ -37,6 +38,7 @@ var (
 	usProtocalsLock sync.Mutex
 	usProtocals     = make(map[string]UpdateServiceProtocal)
 
+	// ErrorsUSPNotSupported occurs when a protocal is not supported
 	ErrorsUSPNotSupported = errors.New("protocal is not supported")
 )
 
@@ -62,6 +64,7 @@ func RegisterProtocal(name string, f UpdateServiceProtocal) {
 	usProtocals[name] = f
 }
 
+// NewUSProtocal create a update service protocal interface by a protocal type
 func NewUSProtocal(protocal string) (UpdateServiceProtocal, error) {
 	for _, f := range usProtocals {
 		if f.Supported(protocal) {

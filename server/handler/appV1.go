@@ -49,7 +49,7 @@ func httpRet(head string, content interface{}, err error) (int, []byte) {
 	return code, result
 }
 
-// List all the files in the namespace/repository
+// AppListFileV1Handler lists  all the files in the namespace/repository
 func AppListFileV1Handler(ctx *macaron.Context) (int, []byte) {
 	namespace := ctx.Params(":namespace")
 	repository := ctx.Params(":repository")
@@ -60,7 +60,7 @@ func AppListFileV1Handler(ctx *macaron.Context) (int, []byte) {
 	return httpRet("AppV1 List files", apps, err)
 }
 
-// Get the public key of the namespace/repository
+// AppGetPublicKeyV1Handler gets the public key of the namespace/repository
 func AppGetPublicKeyV1Handler(ctx *macaron.Context) (int, []byte) {
 	namespace := ctx.Params(":namespace")
 	repository := ctx.Params(":repository")
@@ -74,7 +74,7 @@ func AppGetPublicKeyV1Handler(ctx *macaron.Context) (int, []byte) {
 	return httpRet("AppV1 Get Public Key", nil, err)
 }
 
-// Get the meta data of all the namespace/repository
+// AppGetMetaV1Handler gets the meta data of all the namespace/repository
 func AppGetMetaV1Handler(ctx *macaron.Context) (int, []byte) {
 	namespace := ctx.Params(":namespace")
 	repository := ctx.Params(":repository")
@@ -88,7 +88,7 @@ func AppGetMetaV1Handler(ctx *macaron.Context) (int, []byte) {
 	return httpRet("AppV1 Get Meta", nil, err)
 }
 
-// Get the meta signature data of all the namespace/repository
+// AppGetMetaSignV1Handler gets the meta signature data of all the namespace/repository
 func AppGetMetaSignV1Handler(ctx *macaron.Context) (int, []byte) {
 	namespace := ctx.Params(":namespace")
 	repository := ctx.Params(":repository")
@@ -102,7 +102,7 @@ func AppGetMetaSignV1Handler(ctx *macaron.Context) (int, []byte) {
 	return httpRet("AppV1 Get Meta Sign", data, err)
 }
 
-// Get the content of a certain app
+// AppGetFileV1Handler gets the content of a certain app
 func AppGetFileV1Handler(ctx *macaron.Context) (int, []byte) {
 	namespace := ctx.Params(":namespace")
 	repository := ctx.Params(":repository")
@@ -117,7 +117,7 @@ func AppGetFileV1Handler(ctx *macaron.Context) (int, []byte) {
 	return httpRet("AppV1 Get File", nil, err)
 }
 
-// Post the content of a certain app
+// AppPostFileV1Handler posts the content of a certain app
 func AppPostFileV1Handler(ctx *macaron.Context) (int, []byte) {
 	namespace := ctx.Params(":namespace")
 	repository := ctx.Params(":repository")

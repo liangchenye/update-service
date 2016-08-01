@@ -23,13 +23,15 @@ import (
 	"os"
 	"path/filepath"
 
-	dyutils "github.com/liangchenye/update-service/utils"
+	"github.com/liangchenye/update-service/utils"
 )
 
 var (
-	ErrorsUCConfigExist  = errors.New("update-service update client configuration is already exist")
-	ErrorsUCEmptyURL     = errors.New("invalid repository url")
-	ErrorsUCRepoExist    = errors.New("repository is already exist")
+	// ErrorsUCEmptyURL occurs when a repository url is nil
+	ErrorsUCEmptyURL = errors.New("empty repository url")
+	// ErrorsUCRepoExist occurs when a repository is exist
+	ErrorsUCRepoExist = errors.New("repository is already exist")
+	// ErrorsUCRepoNotExist occurs when a repository is not exist
 	ErrorsUCRepoNotExist = errors.New("repository is not exist")
 )
 
@@ -39,6 +41,7 @@ const (
 	cacheDir   = "cache"
 )
 
+// UpdateClientConfig is the local configuation of a update client
 type UpdateClientConfig struct {
 	DefaultServer string
 	CacheDir      string
@@ -47,9 +50,10 @@ type UpdateClientConfig struct {
 
 func (ucc *UpdateClientConfig) exist() bool {
 	configFile := filepath.Join(os.Getenv("HOME"), topDir, configName)
-	return dyutils.IsFileExist(configFile)
+	return utils.IsFileExist(configFile)
 }
 
+// Init create directory and setup the cache location
 func (ucc *UpdateClientConfig) Init() error {
 	homeDir := os.Getenv("HOME")
 	if homeDir == "" {
@@ -58,7 +62,7 @@ func (ucc *UpdateClientConfig) Init() error {
 
 	topURL := filepath.Join(homeDir, topDir)
 	cacheURL := filepath.Join(topURL, cacheDir)
-	if !dyutils.IsDirExist(cacheURL) {
+	if !utils.IsDirExist(cacheURL) {
 		if err := os.MkdirAll(cacheURL, os.ModePerm); err != nil {
 			return err
 		}
@@ -86,6 +90,7 @@ func (ucc *UpdateClientConfig) save() error {
 	return nil
 }
 
+// Load reads the config data
 func (ucc *UpdateClientConfig) Load() error {
 	homeDir := os.Getenv("HOME")
 	if homeDir == "" {
@@ -108,6 +113,7 @@ func (ucc *UpdateClientConfig) Load() error {
 	return nil
 }
 
+// Add adds a repo url to the config file
 func (ucc *UpdateClientConfig) Add(url string) error {
 	if url == "" {
 		return ErrorsUCEmptyURL
@@ -133,6 +139,7 @@ func (ucc *UpdateClientConfig) Add(url string) error {
 	return ucc.save()
 }
 
+// Remove removes a repo url from the config file
 func (ucc *UpdateClientConfig) Remove(url string) error {
 	if url == "" {
 		return ErrorsUCEmptyURL
