@@ -6,7 +6,13 @@ sudo: false
 
 before_install:
   - go get github.com/golang/lint/golint
+  - go get github.com/Unknwon/com
+  - go get github.com/davecgh/go-spew/spew
+  - go get github.com/go-macaron/inject
+  - go get github.com/pmezard/go-difflib/difflib
+  - go get github.com/stretchr/testify/assert
   - go get github.com/urfave/cli
+  - go get gopkg.in/ini.v1
   - go get gopkg.in/macaron.v1
 
 install: true
