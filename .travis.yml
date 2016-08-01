@@ -1,0 +1,17 @@
+language: go
+go:
+  - 1.5.3
+
+sudo: false
+
+before_install:
+  - go get github.com/golang/lint/golint
+
+install: true
+
+script:
+  - go vet -x ./...
+  - $HOME/gopath/bin/golint ./...
+  - go test -v $(go list ./... | grep -v /vendor/)
+  - make
+  
