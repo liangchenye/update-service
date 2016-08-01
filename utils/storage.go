@@ -22,6 +22,7 @@ import (
 	"sync"
 )
 
+// UpdateServiceStorage represents the storage interface
 type UpdateServiceStorage interface {
 	// url is the database address or local directory (local://tmp/cache)
 	New(url string) (UpdateServiceStorage, error)
@@ -48,8 +49,8 @@ var (
 	usStoragesLock sync.Mutex
 	usStorages     = make(map[string]UpdateServiceStorage)
 
+	// ErrorsUSSNotSupported occurs if a type is not supported
 	ErrorsUSSNotSupported = errors.New("storage type is not supported")
-	ErrorsUSSInvalidNS    = errors.New("invalid ns value detected")
 )
 
 // RegisterStorage provides a way to dynamically register an implementation of a
@@ -74,6 +75,7 @@ func RegisterStorage(name string, f UpdateServiceStorage) {
 	usStorages[name] = f
 }
 
+// NewUSStorage creates a storage interface by a url
 func NewUSStorage(url string) (UpdateServiceStorage, error) {
 	if url == "" {
 		url, _ = GetSetting("storage")

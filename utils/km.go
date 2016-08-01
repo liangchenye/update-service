@@ -22,7 +22,7 @@ import (
 	"sync"
 )
 
-// The Key Manager should be seperate from DUS/DUC.
+// KeyManager should be seperate from US/UC.
 // Now only assume that keys are existed in the backend key manager.
 // It is up to each implementation to decide whether provides a way
 //  to generate key pair automatically.
@@ -37,10 +37,11 @@ type KeyManager interface {
 }
 
 var (
-	dkmsLock sync.Mutex
-	dkms     = make(map[string]KeyManager)
+	kmsLock sync.Mutex
+	kms     = make(map[string]KeyManager)
 
-	ErrorsDKMNotSupported = errors.New("key manager type is not supported")
+	// ErrorsKMNotSupported occurs when the km type is not supported
+	ErrorsKMNotSupported = errors.New("key manager type is not supported")
 )
 
 // RegisterKeyManager provides a way to dynamically register an implementation of a
@@ -56,24 +57,25 @@ func RegisterKeyManager(name string, f KeyManager) {
 		panic("Could not register a nil KeyManager")
 	}
 
-	dkmsLock.Lock()
-	defer dkmsLock.Unlock()
+	kmsLock.Lock()
+	defer kmsLock.Unlock()
 
-	if _, alreadyExists := dkms[name]; alreadyExists {
+	if _, alreadyExists := kms[name]; alreadyExists {
 		panic(fmt.Sprintf("KeyManager type '%s' is already registered", name))
 	}
-	dkms[name] = f
+	kms[name] = f
 }
 
+// NewKeyManager create a key manager by a url
 func NewKeyManager(url string) (KeyManager, error) {
 	if url == "" {
 		url, _ = GetSetting("keymanager")
 	}
-	for _, f := range dkms {
+	for _, f := range kms {
 		if f.Supported(url) {
 			return f.New(url)
 		}
 	}
 
-	return nil, ErrorsDKMNotSupported
+	return nil, ErrorsKMNotSupported
 }

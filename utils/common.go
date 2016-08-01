@@ -33,6 +33,7 @@ import (
 	"time"
 )
 
+// IsDirExist checks if a path is an existed dir
 func IsDirExist(path string) bool {
 	fi, err := os.Stat(path)
 
@@ -43,11 +44,13 @@ func IsDirExist(path string) bool {
 	return fi.IsDir()
 }
 
+// IsFileExist checks if a file url is an exist file
 func IsFileExist(filename string) bool {
 	_, err := os.Stat(filename)
 	return err == nil || os.IsExist(err)
 }
 
+// EncodeBasicAuth encode username and password into a base64 string
 func EncodeBasicAuth(username string, password string) string {
 	auth := username + ":" + password
 	msg := []byte(auth)
@@ -56,6 +59,7 @@ func EncodeBasicAuth(username string, password string) string {
 	return string(authorization)
 }
 
+// DecodeBasicAuth decode a base64 string into a username and a password
 func DecodeBasicAuth(authorization string) (username string, password string, err error) {
 	basic := strings.Split(strings.TrimSpace(authorization), " ")
 	if len(basic) <= 1 {
@@ -85,6 +89,7 @@ func DecodeBasicAuth(authorization string) (username string, password string, er
 	return username, password, nil
 }
 
+// MD5 generates a md value of a key automaticly
 func MD5(key string) string {
 	md5String := fmt.Sprintf("dockyard %s is a container %d hub", key, time.Now().Unix())
 	h := md5.New()
@@ -93,6 +98,7 @@ func MD5(key string) string {
 	return hex.EncodeToString(h.Sum(nil))
 }
 
+// GenerateRSAKeyPair generate a private key and a public key
 func GenerateRSAKeyPair(bits int) ([]byte, []byte, error) {
 	privKey, err := rsa.GenerateKey(rand.Reader, bits)
 	if err != nil {
@@ -112,6 +118,7 @@ func GenerateRSAKeyPair(bits int) ([]byte, []byte, error) {
 	return pem.EncodeToMemory(privBlock), pem.EncodeToMemory(pubBlock), nil
 }
 
+// RSAEncrypt encrypts a content by a public key
 func RSAEncrypt(keyBytes []byte, contentBytes []byte) ([]byte, error) {
 	pubKey, err := getPubKey(keyBytes)
 	if err != nil {
@@ -121,6 +128,7 @@ func RSAEncrypt(keyBytes []byte, contentBytes []byte) ([]byte, error) {
 	return rsa.EncryptPKCS1v15(rand.Reader, pubKey, contentBytes)
 }
 
+// RSADecrypt decrypts content by a private key
 func RSADecrypt(keyBytes []byte, contentBytes []byte) ([]byte, error) {
 	privKey, err := getPrivKey(keyBytes)
 	if err != nil {
@@ -130,6 +138,7 @@ func RSADecrypt(keyBytes []byte, contentBytes []byte) ([]byte, error) {
 	return rsa.DecryptPKCS1v15(rand.Reader, privKey, contentBytes)
 }
 
+// SHA256Sign signs a content by a private key
 func SHA256Sign(keyBytes []byte, contentBytes []byte) ([]byte, error) {
 	privKey, err := getPrivKey(keyBytes)
 	if err != nil {
@@ -140,6 +149,7 @@ func SHA256Sign(keyBytes []byte, contentBytes []byte) ([]byte, error) {
 	return rsa.SignPKCS1v15(rand.Reader, privKey, crypto.SHA256, hashed[:])
 }
 
+// SHA256Verify verifies if a content is valid by a signed data an a public key
 func SHA256Verify(keyBytes []byte, contentBytes []byte, signBytes []byte) error {
 	pubKey, err := getPubKey(keyBytes)
 	if err != nil {

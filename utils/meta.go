@@ -23,6 +23,7 @@ import (
 	"time"
 )
 
+// Meta represents the meta information of a repository
 type Meta struct {
 	Name string
 	Hash string
@@ -36,6 +37,7 @@ const (
 	defaultLifecircle = time.Hour * 24 * 180
 )
 
+// GenerateMeta generates a meta data by a file name and file content
 func GenerateMeta(file string, contentByte []byte) (meta Meta) {
 	meta.Name = file
 	meta.Hash = fmt.Sprintf("%x", sha1.Sum(contentByte))
@@ -44,30 +46,38 @@ func GenerateMeta(file string, contentByte []byte) (meta Meta) {
 	return
 }
 
+// GetHash get the hash string of a file
 func (a Meta) GetHash() string {
 	return a.Hash
 }
 
+// IsExpired tells if an application is expired
 func (a Meta) IsExpired() bool {
+	//FIXME: read time from time server?
 	return a.Expired.Before(time.Now())
 }
 
+// GetCreated returns the created time of an application
 func (a Meta) GetCreated() time.Time {
 	return a.Created
 }
 
+// SetCreated set the created time of an application
 func (a *Meta) SetCreated(t time.Time) {
 	a.Created = t
 }
 
+// GetExpired get the expired time of an application
 func (a Meta) GetExpired() time.Time {
 	return a.Expired
 }
 
+// SetExpired set the expired time of an application
 func (a *Meta) SetExpired(t time.Time) {
 	a.Expired = t
 }
 
+// Compare checks if two meta is the same
 func (a Meta) Compare(b Meta) int {
 	if reflect.DeepEqual(a, b) {
 		return 0

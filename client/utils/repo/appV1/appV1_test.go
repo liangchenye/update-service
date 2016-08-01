@@ -46,11 +46,11 @@ func TestInitConfig(t *testing.T) {
 
 	invalidURL := "appInvalid://containerops.me/containerops/official"
 	_, err := appV1.New(invalidURL)
-	assert.Equal(t, err, cutils.ErrorsDURRepoInvalid, "Fail to parse invalid url")
+	assert.Equal(t, err, cutils.ErrorsUCRepoInvalid, "Fail to parse invalid url")
 
 	invalidURL2 := "appV1://containerops.me/containerops"
 	_, err = appV1.New(invalidURL2)
-	assert.Equal(t, err, cutils.ErrorsDURRepoInvalid, "Fail to parse invalid url")
+	assert.Equal(t, err, cutils.ErrorsUCRepoInvalid, "Fail to parse invalid url")
 
 	validURL := "appV1://containerops.me/containerops/official"
 	f, err := appV1.New(validURL)
