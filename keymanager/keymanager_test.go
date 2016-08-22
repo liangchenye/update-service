@@ -52,6 +52,7 @@ func TestDefaultKeyManager(t *testing.T) {
 		expected bool
 	}{
 		{"peruser", "/tmp", true},
+		{"", "", true},
 		{"unknown", "/tmp", false},
 		{"", "/tmp", false},
 		{"peruser", "", false},

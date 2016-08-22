@@ -29,6 +29,21 @@ type UpdateService struct {
 	km    keymanager.KeyManager
 }
 
+// DefaultUpdateService creates/loads a UpdateService from setting
+func DefaultUpdateService(p, v, n, r string) (us UpdateService, err error) {
+	store, err := storage.DefaultUpdateServiceStorage()
+	if err != nil {
+		return UpdateService{}, err
+	}
+
+	km, err := keymanager.DefaultKeyManager()
+	if err != nil {
+		return UpdateService{}, err
+	}
+
+	return NewUpdateService(store, km, p, v, n, r)
+}
+
 // NewUpdateService creates/loads a UpdateService by a storage service, a key manager servic and 'proto', 'namespace' and 'repository'.
 // key manager could be nil.
 func NewUpdateService(store storage.UpdateServiceStorage, km keymanager.KeyManager, p, v, n, r string) (us UpdateService, err error) {

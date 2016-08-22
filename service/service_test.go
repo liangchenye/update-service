@@ -7,8 +7,37 @@ import (
 
 	"github.com/liangchenye/update-service/keymanager"
 	"github.com/liangchenye/update-service/storage"
+	"github.com/liangchenye/update-service/utils"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestDefaultUpdateService(t *testing.T) {
+	tmpPath, err := ioutil.TempDir("", "us-test-")
+	assert.Nil(t, err, "Fail to create a temp dir")
+	defer os.RemoveAll(tmpPath)
+
+	us := UpdateService{Proto: "p", Version: "v", Namespace: "n", Repository: "r"}
+	cases := []struct {
+		suri     string
+		mode     string
+		kmuri    string
+		expected bool
+	}{
+		{suri: tmpPath, mode: "peruser", kmuri: tmpPath, expected: true},
+		{suri: tmpPath, mode: "", kmuri: "", expected: true},
+		{suri: tmpPath, mode: "peruser", kmuri: "", expected: false},
+		{suri: "invalid://", mode: "", kmuri: "", expected: false},
+	}
+
+	for _, c := range cases {
+		utils.SetSetting("storage-uri", c.suri)
+		utils.SetSetting("keymanager-uri", c.kmuri)
+		utils.SetSetting("keymanager-mode", c.mode)
+		_, err := DefaultUpdateService(us.Proto, us.Version, us.Namespace, us.Repository)
+		assert.Equal(t, c.expected, err == nil, "fail to get default update service")
+	}
+
+}
 
 func TestNewUpdateService(t *testing.T) {
 	tmpPath, err := ioutil.TempDir("", "us-test-")
