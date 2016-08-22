@@ -36,7 +36,7 @@ func (pu *KeyManagerPeruser) Description() string {
 
 // New returns a keymanager by a uri
 func (pu *KeyManagerPeruser) New(uri string) (KeyManager, error) {
-	store, err := storage.NewUSStorage(uri)
+	store, err := storage.NewUpdateServiceStorage(uri)
 	if err != nil {
 		return nil, err
 	}

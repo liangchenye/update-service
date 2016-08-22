@@ -48,8 +48,8 @@ func RegisterStorage(name string, f UpdateServiceStorage) error {
 	return nil
 }
 
-// NewUSStorage creates a storage interface by a uri
-func NewUSStorage(uri string) (UpdateServiceStorage, error) {
+// NewUpdateServiceStorage creates a storage interface by a uri
+func NewUpdateServiceStorage(uri string) (UpdateServiceStorage, error) {
 	for _, f := range usStorages {
 		if f.Supported(uri) {
 			return f.New(uri)

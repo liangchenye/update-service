@@ -1,4 +1,4 @@
-package utils
+package service
 
 import (
 	"encoding/json"
@@ -31,17 +31,13 @@ type UpdateService struct {
 
 // NewUpdateService creates/loads a UpdateService by a storage service, a key manager servic and 'proto', 'namespace' and 'repository'.
 // key manager could be nil.
-func NewUpdateService(store storage.UpdateServiceStorage, km keymanager.KeyManager, kmuri, p, v, n, r string) (us UpdateService, err error) {
+func NewUpdateService(store storage.UpdateServiceStorage, km keymanager.KeyManager, p, v, n, r string) (us UpdateService, err error) {
 	if p == "" || v == "" || n == "" || r == "" {
 		return UpdateService{}, errors.New("Fail to create a update service with empty Proto/Version/Namespace/Repository")
 	}
 
 	if store == nil {
 		return UpdateService{}, errors.New("Fail to create a update service with nil Storage interface")
-	}
-
-	if km == nil {
-		fmt.Println("KeyManager is not set or is not enabled")
 	}
 
 	key := fmt.Sprintf("%s/%s/%s/%s/%s", p, v, n, r, defaultMetaFileName)
