@@ -40,6 +40,9 @@ func TestLocalGet(t *testing.T) {
 	content, err := l.Get(key)
 	assert.Nil(t, err, "Fail to call `get`")
 	assert.Equal(t, []byte(expected), content, "Fail to get the correct data")
+
+	_, err = l.Get("invalidKey")
+	assert.Equal(t, ErrorsNotFound, err, "Fail to catch the not-found error")
 }
 
 func TestLocalPut(t *testing.T) {

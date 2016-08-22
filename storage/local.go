@@ -68,6 +68,10 @@ func (ussl *UpdateServiceStorageLocal) New(uri string) (UpdateServiceStorage, er
 // Get the data of an input key. Key could be "app/v1/namespace/repository/fullname"
 func (ussl *UpdateServiceStorageLocal) Get(key string) ([]byte, error) {
 	file := filepath.Join(ussl.Path, key)
+	if !utils.IsFileExist(file) {
+		return nil, ErrorsNotFound
+	}
+
 	return ioutil.ReadFile(file)
 }
 
