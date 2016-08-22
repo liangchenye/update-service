@@ -63,3 +63,16 @@ func NewKeyManager(name, url string) (KeyManager, error) {
 
 	return nil, ErrorsKMNotSupported
 }
+
+// DefaultKeyManager load default key manager with mode/uri from setting
+func DefaultKeyManager() (KeyManager, error) {
+	mode, err := utils.GetSetting("keymanager-mode")
+	if err != nil {
+		return nil, err
+	}
+	uri, err := utils.GetSetting("keymanager-uri")
+	if err != nil {
+		return nil, err
+	}
+	return NewKeyManager(mode, uri)
+}

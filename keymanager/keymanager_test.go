@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/liangchenye/update-service/utils"
 )
 
 // expunge all the registed implementaions
@@ -38,4 +40,25 @@ func TestNewKeyManager(t *testing.T) {
 
 	_, err := NewKeyManager("unknown", "/tmp")
 	assert.Equal(t, err, ErrorsKMNotSupported)
+}
+
+func TestDefaultKeyManager(t *testing.T) {
+
+	cases := []struct {
+		mode     string
+		uri      string
+		expected bool
+	}{
+		{"peruser", "/tmp", true},
+		{"", "/tmp", false},
+		{"peruser", "", false},
+	}
+
+	for _, c := range cases {
+		utils.SetSetting("keymanager-mode", c.mode)
+		utils.SetSetting("keymanager-uri", c.uri)
+		_, err := DefaultKeyManager()
+		t.Log(err)
+		assert.Equal(t, c.expected, err == nil, "Error in creating default key manager")
+	}
 }
