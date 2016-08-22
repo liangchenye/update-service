@@ -38,5 +38,5 @@ func TestNewUpdateServiceStorage(t *testing.T) {
 
 	RegisterStorage("local", &UpdateServiceStorageLocal{})
 	_, err := NewUSStorage("unknown://")
-	assert.Equal(t, err, ErrorsUSSNotSupported)
+	assert.Equal(t, err, ErrorsNotSupported)
 }

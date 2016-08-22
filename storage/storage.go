@@ -8,9 +8,9 @@ import (
 
 // UpdateServiceStorage represents the storage interface
 type UpdateServiceStorage interface {
-	// url is the database address or local directory (/data)
-	New(url string) (UpdateServiceStorage, error)
-	Supported(url string) bool
+	// uri is the database address or local directory (/data)
+	New(uri string) (UpdateServiceStorage, error)
+	Supported(uri string) bool
 	Get(key string) ([]byte, error)
 	Put(key string, data []byte) error
 	Delete(key string) error
@@ -20,8 +20,10 @@ var (
 	usStoragesLock sync.Mutex
 	usStorages     = make(map[string]UpdateServiceStorage)
 
-	// ErrorsUSSNotSupported occurs if a type is not supported
-	ErrorsUSSNotSupported = errors.New("storage type is not supported")
+	// ErrorsNotSupported occurs if a type is not supported
+	ErrorsNotSupported = errors.New("storage type is not supported")
+	// ErrorsNotFound occurs if cannot find a key value
+	ErrorsNotFound = errors.New("cannot find the value of the key")
 )
 
 // RegisterStorage provides a way to dynamically register an implementation of a
@@ -46,13 +48,13 @@ func RegisterStorage(name string, f UpdateServiceStorage) error {
 	return nil
 }
 
-// NewUSStorage creates a storage interface by a url
-func NewUSStorage(url string) (UpdateServiceStorage, error) {
+// NewUSStorage creates a storage interface by a uri
+func NewUSStorage(uri string) (UpdateServiceStorage, error) {
 	for _, f := range usStorages {
-		if f.Supported(url) {
-			return f.New(url)
+		if f.Supported(uri) {
+			return f.New(uri)
 		}
 	}
 
-	return nil, ErrorsUSSNotSupported
+	return nil, ErrorsNotSupported
 }
