@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+
+	"github.com/liangchenye/update-service/utils"
 )
 
 // expunge all the registed implementaions
@@ -39,4 +41,22 @@ func TestNewUpdateServiceStorage(t *testing.T) {
 	RegisterStorage("local", &UpdateServiceStorageLocal{})
 	_, err := NewUpdateServiceStorage("unknown://")
 	assert.Equal(t, err, ErrorsNotSupported)
+}
+
+func TestDefaultUpdateServiceStorage(t *testing.T) {
+
+	cases := []struct {
+		uri      string
+		expected bool
+	}{
+		{"/tmp", true},
+		{"", false},
+		{"unknown://", false},
+	}
+
+	for _, c := range cases {
+		utils.SetSetting("storage-uri", c.uri)
+		_, err := DefaultUpdateServiceStorage()
+		assert.Equal(t, c.expected, err == nil, "Error in creating default update service")
+	}
 }

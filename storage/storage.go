@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+
+	"github.com/liangchenye/update-service/utils"
 )
 
 // UpdateServiceStorage represents the storage interface
@@ -57,4 +59,13 @@ func NewUpdateServiceStorage(uri string) (UpdateServiceStorage, error) {
 	}
 
 	return nil, ErrorsNotSupported
+}
+
+// DefaultUpdateServiceStorage load default update service storage with uri from setting
+func DefaultUpdateServiceStorage() (UpdateServiceStorage, error) {
+	uri, err := utils.GetSetting("storage-uri")
+	if err != nil {
+		return nil, err
+	}
+	return NewUpdateServiceStorage(uri)
 }

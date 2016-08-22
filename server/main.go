@@ -25,9 +25,6 @@ import (
 	"gopkg.in/macaron.v1"
 
 	"github.com/liangchenye/update-service/utils"
-	_ "github.com/liangchenye/update-service/utils/km/local"
-	_ "github.com/liangchenye/update-service/utils/protocal/appV1"
-	_ "github.com/liangchenye/update-service/utils/storage/local"
 )
 
 var webCommand = cli.Command{
@@ -52,13 +49,18 @@ var webCommand = cli.Command{
 			Usage: "web service listen at port 80; if run with https will be 443.",
 		},
 		cli.StringFlag{
-			Name:  "storage",
-			Value: "local://tmp/dockyard-updater-server-storage",
+			Name:  "storage-uri",
+			Value: "/tmp/dockyard-updater-server-storage",
 			Usage: "the storage database",
 		},
 		cli.StringFlag{
-			Name:  "keymanager",
-			Value: "local://tmp/dockyard-updater-server-keymanager",
+			Name:  "keymanager-mode",
+			Value: "peruser",
+			Usage: "the key manager mode",
+		},
+		cli.StringFlag{
+			Name:  "keymanager-uri",
+			Value: "/tmp/dockyard-updater-server-keymanager",
 			Usage: "the key manager url",
 		},
 	},
@@ -67,7 +69,7 @@ var webCommand = cli.Command{
 func runUpdateServer(c *cli.Context) error {
 	m := macaron.New()
 
-	for _, item := range []string{"keymanager", "storage"} {
+	for _, item := range []string{"keymanager-mode", "keymanager-uri", "storage-uri"} {
 		utils.SetSetting(item, c.String(item))
 	}
 

@@ -43,6 +43,8 @@ func TestNewKeyManager(t *testing.T) {
 }
 
 func TestDefaultKeyManager(t *testing.T) {
+	preTest()
+	RegisterKeyManager("peruser", &KeyManagerPeruser{})
 
 	cases := []struct {
 		mode     string
@@ -50,6 +52,7 @@ func TestDefaultKeyManager(t *testing.T) {
 		expected bool
 	}{
 		{"peruser", "/tmp", true},
+		{"unknown", "/tmp", false},
 		{"", "/tmp", false},
 		{"peruser", "", false},
 	}
