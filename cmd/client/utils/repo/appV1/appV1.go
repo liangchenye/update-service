@@ -26,7 +26,7 @@ import (
 	"regexp"
 	"strings"
 
-	cutils "github.com/liangchenye/update-service/client/utils"
+	cutils "github.com/liangchenye/update-service/cmd/client/utils"
 )
 
 const (

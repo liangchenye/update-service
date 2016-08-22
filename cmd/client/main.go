@@ -21,7 +21,7 @@ import (
 
 	"github.com/urfave/cli"
 
-	_ "github.com/liangchenye/update-service/client/utils/repo/appV1"
+	_ "github.com/liangchenye/update-service/cmd/client/utils/repo/appV1"
 )
 
 func main() {

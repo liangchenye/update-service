@@ -19,7 +19,7 @@ package main
 import (
 	"gopkg.in/macaron.v1"
 
-	h "github.com/liangchenye/update-service/server/handler"
+	h "github.com/liangchenye/update-service/cmd/server/handler"
 )
 
 // SetRouters is the Dockyard Updater Server Router Definition

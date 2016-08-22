@@ -17,8 +17,8 @@ limitations under the License.
 package main
 
 import (
-	"crypto/sha1"
-	"encoding/json"
+	//	"crypto/sha1"
+	//	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -27,7 +27,7 @@ import (
 
 	"github.com/urfave/cli"
 
-	cutils "github.com/liangchenye/update-service/client/utils"
+	cutils "github.com/liangchenye/update-service/cmd/client/utils"
 	"github.com/liangchenye/update-service/utils"
 )
 
@@ -234,27 +234,30 @@ var pullCommand = cli.Command{
 		fmt.Println("success in verifying meta data and signature file")
 
 		fmt.Println("start to compare the hash value")
-		var metas []utils.Meta
-		fileHash := fmt.Sprintf("%x", sha1.Sum(fileBytes))
-		json.Unmarshal(metaBytes, &metas)
-		for _, meta := range metas {
-			if meta.Name != file {
-				continue
+		/*
+			var metas []service.UpdateService
+			fileHash := fmt.Sprintf("%x", sha1.Sum(fileBytes))
+			json.Unmarshal(metaBytes, &metas)
+			for _, meta := range metas {
+				if meta.Name != file {
+					continue
+				}
+
+				if meta.Hash == fileHash {
+					fmt.Println("Congratulations! The file is valid!")
+					return nil
+				}
+
+				err := errors.New("the file is invalid, maybe security issue")
+				fmt.Println(err)
+				return err
 			}
 
-			if meta.Hash == fileHash {
-				fmt.Println("Congratulations! The file is valid!")
-				return nil
-			}
-
-			err := errors.New("the file is invalid, maybe security issue")
+			err = errors.New("something wrong with the server, cannot find the file in the meta data")
 			fmt.Println(err)
+
 			return err
-		}
-
-		err = errors.New("something wrong with the server, cannot find the file in the meta data")
-		fmt.Println(err)
-
-		return err
+		*/
+		return nil
 	},
 }

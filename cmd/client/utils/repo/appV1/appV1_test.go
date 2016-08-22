@@ -25,7 +25,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	cutils "github.com/liangchenye/update-service/client/utils"
+	cutils "github.com/liangchenye/update-service/cmd/client/utils"
 	"github.com/liangchenye/update-service/utils"
 )
 

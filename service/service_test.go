@@ -84,9 +84,9 @@ func TestUpdateServiceOper(t *testing.T) {
 
 	// query an 'fn' item and compare it
 	newService, _ := NewUpdateService(store, km, "p", "v", "n", "r")
-	_, err = newService.Get("invalidfn")
+	_, err = newService.GetItem("invalidfn")
 	assert.NotNil(t, err, "Should not load item with invalid fullname")
-	retItem, err := newService.Get("fn")
+	retItem, err := newService.GetItem("fn")
 	assert.Nil(t, err, "Fail to load exist item")
 	assert.Equal(t, testItem.FullName, retItem.FullName, "Fail to load the correct fullname")
 	assert.Equal(t, len(testItem.SHAS), len(retItem.SHAS), "Fail to load the correct SHAS count")
@@ -97,7 +97,7 @@ func TestUpdateServiceOper(t *testing.T) {
 	err = newService.Put(updatedItem)
 	assert.Nil(t, err, "Fail to update a test item")
 	newUpdatedService, _ := NewUpdateService(store, km, "p", "v", "n", "r")
-	retUpdatedItem, err := newUpdatedService.Get("fn")
+	retUpdatedItem, err := newUpdatedService.GetItem("fn")
 	assert.Nil(t, err, "Fail to load exist item")
 	assert.Equal(t, len(updatedItem.SHAS), len(retUpdatedItem.SHAS), "Fail to load the correct SHAS count")
 	assert.Equal(t, updatedItem.SHAS[0], retUpdatedItem.SHAS[0], "Fail to load the correct SHAS value")
@@ -115,6 +115,6 @@ func TestUpdateServiceOper(t *testing.T) {
 	assert.Nil(t, err, "Fail to delete meta item")
 	err = newService.Delete("fn")
 	assert.NotNil(t, err, "Should return error in deleting non exist item")
-	_, err = newService.Get("fn")
+	_, err = newService.GetItem("fn")
 	assert.NotNil(t, err, "Should return error in query deleted item")
 }

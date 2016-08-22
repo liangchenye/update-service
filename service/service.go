@@ -91,8 +91,15 @@ func (us *UpdateService) GetMetaSign() ([]byte, error) {
 	return us.store.Get(key)
 }
 
-// Get gets an UpdateServiceItem by 'fullname'
-func (us *UpdateService) Get(fullname string) (UpdateServiceItem, error) {
+// TODO: this should not be in the update service, update service now is just handling meta/sign issues
+// Get provides appliance data bytes
+func (us *UpdateService) Get(fullname string) ([]byte, error) {
+	key := fmt.Sprintf("%s/%s/%s/%s/%s", us.Proto, us.Version, us.Namespace, us.Repository, fullname)
+	return us.store.Get(key)
+}
+
+// GetItem gets an UpdateServiceItem by 'fullname'
+func (us *UpdateService) GetItem(fullname string) (UpdateServiceItem, error) {
 	if us.Proto == "" || us.Namespace == "" || us.Repository == "" {
 		return UpdateServiceItem{}, errors.New("Fail to get a meta with empty Proto/Namespace/Repository")
 	}
@@ -108,6 +115,13 @@ func (us *UpdateService) Get(fullname string) (UpdateServiceItem, error) {
 	}
 
 	return UpdateServiceItem{}, fmt.Errorf("Cannot find the meta item: %s", fullname)
+}
+
+// List gets files under a repo
+func (us *UpdateService) List() ([]string, error) {
+	//TODO
+
+	return nil, nil
 }
 
 // Put adds an UpdateServiceItem to meta data, save both meta file and sign file
