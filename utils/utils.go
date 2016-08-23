@@ -1,23 +1,44 @@
+/*
+Copyright 2015 The ContainerOps Authors All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package utils
 
 import (
+	"bytes"
 	"crypto"
 	"crypto/md5"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
+	"crypto/sha512"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"io"
 	"os"
+	"reflect"
+	"regexp"
 	"strings"
 	"time"
 )
 
-// IsDirExist checks if a path is an existed dir
+// IsDirExist checks if a dir exists
 func IsDirExist(path string) bool {
 	fi, err := os.Stat(path)
 
@@ -28,13 +49,33 @@ func IsDirExist(path string) bool {
 	return fi.IsDir()
 }
 
-// IsFileExist checks if a file url is an exist file
+// IsFileExist checks if a file exists
 func IsFileExist(filename string) bool {
 	_, err := os.Stat(filename)
 	return err == nil || os.IsExist(err)
 }
 
-// EncodeBasicAuth encode username and password into a base64 string
+// Contain checks if an object is included in the target object
+func Contain(obj interface{}, target interface{}) (bool, error) {
+	targetValue := reflect.ValueOf(target)
+
+	switch reflect.TypeOf(target).Kind() {
+	case reflect.Slice, reflect.Array:
+		for i := 0; i < targetValue.Len(); i++ {
+			if targetValue.Index(i).Interface() == obj {
+				return true, nil
+			}
+		}
+	case reflect.Map:
+		if targetValue.MapIndex(reflect.ValueOf(obj)).IsValid() {
+			return true, nil
+		}
+	}
+
+	return false, errors.New("not in array")
+}
+
+// EncodeBasicAuth encodes plain user/password into a base64 string
 func EncodeBasicAuth(username string, password string) string {
 	auth := username + ":" + password
 	msg := []byte(auth)
@@ -43,7 +84,7 @@ func EncodeBasicAuth(username string, password string) string {
 	return string(authorization)
 }
 
-// DecodeBasicAuth decode a base64 string into a username and a password
+// DecodeBasicAuth decodes a base64 string into a plain user/password
 func DecodeBasicAuth(authorization string) (username string, password string, err error) {
 	basic := strings.Split(strings.TrimSpace(authorization), " ")
 	if len(basic) <= 1 {
@@ -73,13 +114,52 @@ func DecodeBasicAuth(authorization string) (username string, password string, er
 	return username, password, nil
 }
 
-// MD5 generates a md value of a key automaticly
+// ValidatePassword checks if a password is correct
+func ValidatePassword(password string) error {
+	if valida, _ := regexp.MatchString("[:alpha:]", password); valida != true {
+		return fmt.Errorf("No alpha character in the password.")
+	}
+
+	if valida, _ := regexp.MatchString("[:digit:]", password); valida != true {
+		return fmt.Errorf("No digital character in the password.")
+	}
+
+	if len(password) < 5 || len(password) > 30 {
+		return fmt.Errorf("Password characters length should be between 5 - 30.")
+	}
+
+	return nil
+}
+
+// MD5 creates md5 string for an input key
 func MD5(key string) string {
 	md5String := fmt.Sprintf("dockyard %s is a container %d hub", key, time.Now().Unix())
 	h := md5.New()
 	h.Write([]byte(md5String))
 
 	return hex.EncodeToString(h.Sum(nil))
+}
+
+// SHA512 creates sha512 string for an input data
+func SHA512(body []byte) (string, error) {
+	sha512h := sha512.New()
+	_, err := io.Copy(sha512h, bytes.NewReader(body))
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%x", sha512h.Sum(nil)), nil
+}
+
+// Compare returns 0 if a, b are equal, -1 if a < b, other wise returns 1
+func Compare(a, b string) int {
+	if a == b {
+		return 0
+	}
+	if a < b {
+		return -1
+	}
+	return +1
 }
 
 // GenerateRSAKeyPair generate a private key and a public key

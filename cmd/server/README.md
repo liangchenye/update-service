@@ -1,10 +1,9 @@
 # Updater Server
 
-Dockyard Updater Server is a server side of [software update system](https://github.com/theupdateframework/tuf/#what-is-a-software-update-system)
-based on [TUF: The Update Framework](https://www.theupdateframework.com). It receives and provides [appliance](#appliance) from/to a Dockyard Updater Service user.
+Updater Server is a server side of [software update system](https://github.com/theupdateframework/tuf/#what-is-a-software-update-system)
+based on [TUF: The Update Framework](https://www.theupdateframework.com). It receives and provides [appliance](#appliance) from/to a Updater Service user.
 
-## Why do we need to adopt TUF to Dockyard
-'Securing' Dockyard.
+## Why do we need to adopt TUF to Update Service
 ```
 The Update Framework (TUF) helps developers to secure new or existing software update systems, which are often found to be vulnerable to many known attacks. TUF addresses this widespread problem by providing a comprehensive, flexible security framework that developers can integrate with any software update system. The framework can be easily integrated (or implemented in the native programming languages of these update systems) due to its concise, self-contained architecture and specification.
 ```
@@ -19,8 +18,8 @@ The Update Framework (TUF) helps developers to secure new or existing software u
 ## How to use it
 To make a simple demo, you can:
 ```
-	$ mkdir /tmp/dockyard-updater-server-storage -p
-        $ cp -fr utils/storage/local/testdata/containerops /tmp/dockyard-updater-server-storage
+	$ mkdir /tmp/updater-server-storage -p
+        $ cp -fr utils/storage/local/testdata/containerops /tmp/updater-server-storage
 	$ make
 	$ ./dus web
 ```
@@ -82,4 +81,4 @@ To an app store user, he/she might pull a software like `official/dockyard/cento
 `official` is the namespace, `dockyard` is the repository.
 
 ### Database
-The default location is for a local storage is at "/tmp/dockyard-updater-server-storage"
+The default location is for a local storage is at "/tmp/updater-server-storage"
