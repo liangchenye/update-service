@@ -5,8 +5,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/liangchenye/update-service/keymanager"
-	"github.com/liangchenye/update-service/storage"
 	"github.com/liangchenye/update-service/utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -25,7 +23,7 @@ func TestDefaultUpdateService(t *testing.T) {
 	}{
 		{suri: tmpPath, mode: "peruser", kmuri: tmpPath, expected: true},
 		{suri: tmpPath, mode: "", kmuri: "", expected: true},
-		{suri: tmpPath, mode: "peruser", kmuri: "", expected: false},
+		{suri: tmpPath, mode: "peruser", kmuri: "", expected: true},
 		{suri: "invalid://", mode: "", kmuri: "", expected: false},
 	}
 
@@ -44,26 +42,24 @@ func TestNewUpdateService(t *testing.T) {
 	assert.Nil(t, err, "Fail to create a temp dir")
 	defer os.RemoveAll(tmpPath)
 
-	store, _ := storage.NewUpdateServiceStorage(tmpPath)
-	km, _ := keymanager.NewKeyManager("peruser", tmpPath)
-
 	cases := []struct {
 		us       UpdateService
-		store    storage.UpdateServiceStorage
-		km       keymanager.KeyManager
+		store    string
+		km       string
+		mode     string
 		expected bool
 	}{
-		{us: UpdateService{Proto: "p", Version: "v", Namespace: "n", Repository: "r"}, store: store, km: km, expected: true},
-		{us: UpdateService{Proto: "p", Version: "v", Namespace: "n", Repository: "r"}, store: store, km: nil, expected: true},
-		{us: UpdateService{Proto: "p", Version: "v", Namespace: "n", Repository: "r"}, store: nil, km: km, expected: false},
-		{us: UpdateService{Proto: "", Version: "v", Namespace: "n", Repository: "r"}, store: store, km: km, expected: false},
-		{us: UpdateService{Proto: "p", Version: "", Namespace: "n", Repository: "r"}, store: store, km: km, expected: false},
-		{us: UpdateService{Proto: "p", Version: "v", Namespace: "", Repository: "r"}, store: store, km: km, expected: false},
-		{us: UpdateService{Proto: "p", Version: "v", Namespace: "n", Repository: ""}, store: store, km: km, expected: false},
+		{us: UpdateService{Proto: "p", Version: "v", Namespace: "n", Repository: "r"}, store: tmpPath, km: tmpPath, mode: "peruser", expected: true},
+		{us: UpdateService{Proto: "p", Version: "v", Namespace: "n", Repository: "r"}, store: tmpPath, km: "", mode: "peruser", expected: true},
+		{us: UpdateService{Proto: "p", Version: "v", Namespace: "n", Repository: "r"}, store: "", km: tmpPath, mode: "peruser", expected: false},
+		{us: UpdateService{Proto: "", Version: "v", Namespace: "n", Repository: "r"}, store: tmpPath, km: tmpPath, mode: "peruser", expected: false},
+		{us: UpdateService{Proto: "p", Version: "", Namespace: "n", Repository: "r"}, store: tmpPath, km: tmpPath, mode: "peruser", expected: false},
+		{us: UpdateService{Proto: "p", Version: "v", Namespace: "", Repository: "r"}, store: tmpPath, km: tmpPath, mode: "peruser", expected: false},
+		{us: UpdateService{Proto: "p", Version: "v", Namespace: "n", Repository: ""}, store: tmpPath, km: tmpPath, mode: "peruser", expected: false},
 	}
 
 	for _, c := range cases {
-		_, err := NewUpdateService(c.store, c.km, c.us.Proto, c.us.Version, c.us.Namespace, c.us.Repository)
+		_, err := NewUpdateService(c.store, c.km, c.mode, c.us.Proto, c.us.Version, c.us.Namespace, c.us.Repository)
 		assert.Equal(t, c.expected, err == nil, "Error in creating update service")
 	}
 }
@@ -73,17 +69,18 @@ func TestUpdateServiceOper(t *testing.T) {
 	assert.Nil(t, err, "Fail to create a temp dir")
 	defer os.RemoveAll(tmpPath)
 
-	store, _ := storage.NewUpdateServiceStorage(tmpPath)
-	km, _ := keymanager.NewKeyManager("peruser", tmpPath)
+	store := tmpPath
+	km := tmpPath
+	mode := "peruser"
 
 	// add an 'fn/sha0' item
-	testService, _ := NewUpdateService(store, km, "p", "v", "n", "r")
+	testService, _ := NewUpdateService(store, km, mode, "p", "v", "n", "r")
 	testItem, _ := NewUpdateServiceItem("fn", []string{"sha0"})
 	err = testService.Put(testItem)
 	assert.Nil(t, err, "Fail to add a test item")
 
 	// query an 'fn' item and compare it
-	newService, _ := NewUpdateService(store, km, "p", "v", "n", "r")
+	newService, _ := NewUpdateService(store, km, mode, "p", "v", "n", "r")
 	_, err = newService.GetItem("invalidfn")
 	assert.NotNil(t, err, "Should not load item with invalid fullname")
 	retItem, err := newService.GetItem("fn")
@@ -96,7 +93,7 @@ func TestUpdateServiceOper(t *testing.T) {
 	updatedItem, _ := NewUpdateServiceItem("fn", []string{"sha0-updated"})
 	err = newService.Put(updatedItem)
 	assert.Nil(t, err, "Fail to update a test item")
-	newUpdatedService, _ := NewUpdateService(store, km, "p", "v", "n", "r")
+	newUpdatedService, _ := NewUpdateService(store, km, mode, "p", "v", "n", "r")
 	retUpdatedItem, err := newUpdatedService.GetItem("fn")
 	assert.Nil(t, err, "Fail to load exist item")
 	assert.Equal(t, len(updatedItem.SHAS), len(retUpdatedItem.SHAS), "Fail to load the correct SHAS count")

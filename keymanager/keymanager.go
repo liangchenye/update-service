@@ -10,13 +10,14 @@ import (
 
 // KeyManager provides interfaces to handle key issues.
 type KeyManager interface {
-	Name() string
+	ModeName() string
 	Description() string
 	New(url string) (KeyManager, error)
 	GenerateKey(a utils.Appliance) error
 	GetPublicKey(a utils.Appliance) ([]byte, error)
 	Sign(a utils.Appliance, data []byte) ([]byte, error)
 	Decrypt(a utils.Appliance, data []byte) ([]byte, error)
+	Debug()
 }
 
 var (
@@ -34,8 +35,8 @@ var (
 // if the 'name' is blank,
 // or if the 'keymanager inteface' is nil,
 // it returns an error.
-func RegisterKeyManager(name string, f KeyManager) error {
-	if name == "" {
+func RegisterKeyManager(modeName string, f KeyManager) error {
+	if modeName == "" {
 		return errors.New("Could not register a KeyManager with an empty name")
 	}
 	if f == nil {
@@ -45,18 +46,18 @@ func RegisterKeyManager(name string, f KeyManager) error {
 	kmsLock.Lock()
 	defer kmsLock.Unlock()
 
-	if _, alreadyExists := kms[name]; alreadyExists {
-		return fmt.Errorf("KeyManager type '%s' is already registered", name)
+	if _, alreadyExists := kms[modeName]; alreadyExists {
+		return fmt.Errorf("KeyManager type '%s' is already registered", modeName)
 	}
-	kms[name] = f
+	kms[modeName] = f
 
 	return nil
 }
 
 // NewKeyManager create a key manager by its name and a storage url
-func NewKeyManager(name, url string) (KeyManager, error) {
+func NewKeyManager(modeName, url string) (KeyManager, error) {
 	for _, f := range kms {
-		if f.Name() == name {
+		if f.ModeName() == modeName {
 			return f.New(url)
 		}
 	}

@@ -60,16 +60,20 @@ func (ussl *UpdateServiceStorageLocal) Get(key string) ([]byte, error) {
 }
 
 // Put adds a file with a key. Key could be "app/v1/namespace/repository/fullname"
-func (ussl *UpdateServiceStorageLocal) Put(key string, content []byte) error {
+func (ussl *UpdateServiceStorageLocal) Put(key string, content []byte) (string, error) {
 	file := filepath.Join(ussl.Path, key)
 	if !utils.IsDirExist(filepath.Dir(file)) {
 		err := os.MkdirAll(filepath.Dir(file), 0755)
 		if err != nil {
-			return err
+			return "", err
 		}
 	}
 
-	return ioutil.WriteFile(file, content, 0644)
+	err := ioutil.WriteFile(file, content, 0644)
+	if err != nil {
+		return "", err
+	}
+	return file, nil
 }
 
 // Delete removes a file by a key. Key could be "app/v1/namespace/repository/fullname"
@@ -80,4 +84,7 @@ func (ussl *UpdateServiceStorageLocal) Delete(key string) error {
 	}
 
 	return os.Remove(file)
+}
+
+func (ussl *UpdateServiceStorageLocal) Debug() {
 }

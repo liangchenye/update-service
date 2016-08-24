@@ -14,8 +14,10 @@ type UpdateServiceStorage interface {
 	New(uri string) (UpdateServiceStorage, error)
 	Supported(uri string) bool
 	Get(key string) ([]byte, error)
-	Put(key string, data []byte) error
+	// Put returns id or local path
+	Put(key string, data []byte) (string, error)
 	Delete(key string) error
+	Debug()
 }
 
 var (

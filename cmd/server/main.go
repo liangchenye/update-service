@@ -34,7 +34,7 @@ var webCommand = cli.Command{
 		},
 		cli.StringFlag{
 			Name:  "storage-uri",
-			Value: "/tmp/dockyard-updater-server-storage",
+			Value: "/tmp/updater-server-storage",
 			Usage: "the storage database",
 		},
 		cli.StringFlag{
@@ -44,7 +44,7 @@ var webCommand = cli.Command{
 		},
 		cli.StringFlag{
 			Name:  "keymanager-uri",
-			Value: "/tmp/dockyard-updater-server-keymanager",
+			Value: "/tmp/updater-server-keymanager",
 			Usage: "the key manager url",
 		},
 	},

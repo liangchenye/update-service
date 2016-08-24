@@ -25,77 +25,92 @@ type UpdateService struct {
 	Items      []UpdateServiceItem
 	Updated    time.Time
 
-	store storage.UpdateServiceStorage
-	km    keymanager.KeyManager
+	storageURI string
+	kmURI      string
+	kmMode     string
 }
 
 // DefaultUpdateService creates/loads a UpdateService from setting
-func DefaultUpdateService(p, v, n, r string) (us UpdateService, err error) {
-	store, err := storage.DefaultUpdateServiceStorage()
+func DefaultUpdateService(p, v, n, r string) (UpdateService, error) {
+	storageURI, err := utils.GetSetting("storage-uri")
 	if err != nil {
 		return UpdateService{}, err
 	}
 
-	km, err := keymanager.DefaultKeyManager()
-	if err != nil {
-		return UpdateService{}, err
-	}
-
-	return NewUpdateService(store, km, p, v, n, r)
+	kmURI, _ := utils.GetSetting("keymanager-uri")
+	kmMode, _ := utils.GetSetting("keymanager-mode")
+	return NewUpdateService(storageURI, kmURI, kmMode, p, v, n, r)
 }
 
 // NewUpdateService creates/loads a UpdateService by a storage service, a key manager servic and 'proto', 'namespace' and 'repository'.
 // key manager could be nil.
-func NewUpdateService(store storage.UpdateServiceStorage, km keymanager.KeyManager, p, v, n, r string) (us UpdateService, err error) {
+func NewUpdateService(storageURI, kmURI, kmMode, p, v, n, r string) (us UpdateService, err error) {
 	if p == "" || v == "" || n == "" || r == "" {
 		return UpdateService{}, errors.New("Fail to create a update service with empty Proto/Version/Namespace/Repository")
 	}
 
-	if store == nil {
+	if storageURI == "" {
 		return UpdateService{}, errors.New("Fail to create a update service with nil Storage interface")
 	}
 
 	key := fmt.Sprintf("%s/%s/%s/%s/%s", p, v, n, r, defaultMetaFileName)
+	store, err := storage.NewUpdateServiceStorage(storageURI)
+	if err != nil {
+		return UpdateService{}, err
+	}
+
 	data, err := store.Get(key)
 	if err == nil {
-		if err := json.Unmarshal(data, &us); err != nil {
+		err := json.Unmarshal(data, &us)
+		if err != nil {
 			return UpdateService{}, err
 		}
-		us.store = store
-		us.km = km
+		us.storageURI = storageURI
+		us.kmURI = kmURI
+		us.kmMode = kmMode
 	} else if err == storage.ErrorsNotFound {
+		us.storageURI = storageURI
+		us.kmURI = kmURI
+		us.kmMode = kmMode
 		us.Proto = p
 		us.Version = v
 		us.Namespace = n
 		us.Repository = r
-		us.store = store
-		us.km = km
 		us.save()
 	} else {
 		return UpdateService{}, err
 	}
 
-	us.save()
 	return us, nil
+}
+
+func (us *UpdateService) GetKM() keymanager.KeyManager {
+	km, _ := keymanager.NewKeyManager(us.kmMode, us.kmURI)
+	return km
+}
+
+func (us *UpdateService) GetStorage() storage.UpdateServiceStorage {
+	store, _ := storage.NewUpdateServiceStorage(us.storageURI)
+	return store
 }
 
 // GetMeta provides meta bytes
 func (us *UpdateService) GetMeta() ([]byte, error) {
 	key := fmt.Sprintf("%s/%s/%s/%s/%s", us.Proto, us.Version, us.Namespace, us.Repository, defaultMetaFileName)
-	return us.store.Get(key)
+	return us.GetStorage().Get(key)
 }
 
 // GetMetaSign provides meta sign bytes
 func (us *UpdateService) GetMetaSign() ([]byte, error) {
 	key := fmt.Sprintf("%s/%s/%s/%s/%s", us.Proto, us.Version, us.Namespace, us.Repository, defaultMetaSignFileName)
-	return us.store.Get(key)
+	return us.GetStorage().Get(key)
 }
 
 // TODO: this should not be in the update service, update service now is just handling meta/sign issues
 // Get provides appliance data bytes
 func (us *UpdateService) Get(fullname string) ([]byte, error) {
 	key := fmt.Sprintf("%s/%s/%s/%s/%s", us.Proto, us.Version, us.Namespace, us.Repository, fullname)
-	return us.store.Get(key)
+	return us.GetStorage().Get(key)
 }
 
 // GetItem gets an UpdateServiceItem by 'fullname'
@@ -172,12 +187,12 @@ func (us *UpdateService) save() error {
 	us.Updated = time.Now()
 	content, _ := json.Marshal(us)
 	key := fmt.Sprintf("%s/%s/%s/%s/%s", us.Proto, us.Version, us.Namespace, us.Repository, defaultMetaFileName)
-	err := us.store.Put(key, content)
+	_, err := us.GetStorage().Put(key, content)
 	if err != nil {
 		return err
 	}
 
-	if us.km != nil {
+	if us.kmURI != "" {
 		// write sign file, don't popup error even fail to saveSign
 		us.saveSign(content)
 	}
@@ -188,11 +203,15 @@ func (us *UpdateService) save() error {
 // saveSign signs the meta data and save the signed data to local file
 func (us *UpdateService) saveSign(content []byte) error {
 	a := utils.Appliance{Proto: us.Proto, Version: us.Version, Namespace: us.Namespace, Repository: us.Repository}
-	content, err := us.km.Sign(a, content)
+	content, err := us.GetKM().Sign(a, content)
 	if err != nil {
 		return err
 	}
 
 	key := fmt.Sprintf("%s/%s/%s/%s/%s", us.Proto, us.Version, us.Namespace, us.Repository, defaultMetaSignFileName)
-	return us.store.Put(key, content)
+	_, err = us.GetStorage().Put(key, content)
+	return err
+}
+
+func (us *UpdateService) Debug() {
 }

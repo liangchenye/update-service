@@ -11,7 +11,7 @@ import (
 // expunge all the registed implementaions
 func preTest() {
 	for _, f := range kms {
-		delete(kms, f.Name())
+		delete(kms, f.ModeName())
 	}
 }
 

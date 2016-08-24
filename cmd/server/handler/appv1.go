@@ -95,7 +95,7 @@ func AppGetFileV1Handler(ctx *macaron.Context) (int, []byte) {
 	repository := ctx.Params(":repository")
 	name := ctx.Params(":name")
 
-	key := fmt.Sprintf("%s/%s/%s", namespace, repository, name)
+	key := fmt.Sprintf("%s/%s/%s/%s/blob/%s", "app", "v1", namespace, repository, name)
 	store, _ := storage.DefaultUpdateServiceStorage()
 	data, err := store.Get(key)
 	if err != nil {
@@ -112,9 +112,9 @@ func AppPutFileV1Handler(ctx *macaron.Context) (int, []byte) {
 	name := ctx.Params(":name")
 
 	data, _ := ctx.Req.Body().Bytes()
-	key := fmt.Sprintf("%s/%s/%s", namespace, repository, name)
+	key := fmt.Sprintf("%s/%s/%s/%s/blob/%s", "app", "v1", namespace, repository, name)
 	store, _ := storage.DefaultUpdateServiceStorage()
-	err := store.Put(key, data)
+	_, err := store.Put(key, data)
 	if err != nil {
 		return httpRet("AppV1 Put data", nil, err)
 	}
@@ -122,6 +122,7 @@ func AppPutFileV1Handler(ctx *macaron.Context) (int, []byte) {
 	sha, err := utils.SHA512(data)
 	us, _ := service.DefaultUpdateService("app", "v1", namespace, repository)
 	item, _ := service.NewUpdateServiceItem(name, []string{sha})
+	us.Debug()
 	err = us.Put(item)
 	if err != nil {
 		// remove the blob data either

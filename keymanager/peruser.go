@@ -26,7 +26,7 @@ func init() {
 	RegisterKeyManager(peruserName, &KeyManagerPeruser{})
 }
 
-func (pu *KeyManagerPeruser) Name() string {
+func (pu *KeyManagerPeruser) ModeName() string {
 	return peruserName
 }
 
@@ -67,13 +67,13 @@ func (pu *KeyManagerPeruser) GenerateKey(a utils.Appliance) error {
 	}
 
 	privKey := fmt.Sprintf("%s/%s/%s/%s", a.Proto, a.Version, a.Namespace, defaultPrivateKey)
-	err = pu.store.Put(privKey, privBytes)
+	_, err = pu.store.Put(privKey, privBytes)
 	if err != nil {
 		return err
 	}
 
 	pubKey := fmt.Sprintf("%s/%s/%s/%s", a.Proto, a.Version, a.Namespace, defaultPublicKey)
-	err = pu.store.Put(pubKey, pubBytes)
+	_, err = pu.store.Put(pubKey, pubBytes)
 	if err != nil {
 		// make sure priv/pub key exist in pairs.
 		pu.store.Delete(privKey)
@@ -109,5 +109,7 @@ func (pu *KeyManagerPeruser) Decrypt(a utils.Appliance, data []byte) ([]byte, er
 	}
 
 	return utils.RSADecrypt(content, data)
+}
 
+func (pu *KeyManagerPeruser) Debug() {
 }

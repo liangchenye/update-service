@@ -1,55 +1,30 @@
 package main
 
 import (
-	//	"crypto/sha1"
-	//	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 
 	"github.com/urfave/cli"
 
-	cutils "github.com/liangchenye/update-service/cmd/client/utils"
 	"github.com/liangchenye/update-service/utils"
 )
-
-var initCommand = cli.Command{
-	Name:  "init",
-	Usage: "initiate default setting",
-	Action: func(context *cli.Context) error {
-		var ucc cutils.UpdateClientConfig
-
-		if err := ucc.Init(); err != nil {
-			fmt.Println(err)
-			return err
-		}
-
-		fmt.Println("Success in initiating Dockyard Updater Client configuration.")
-		return nil
-	},
-}
 
 var addCommand = cli.Command{
 	Name:  "add",
 	Usage: "add a repository url",
 
 	Action: func(context *cli.Context) error {
-		var ucc cutils.UpdateClientConfig
-
-		repo, err := cutils.NewUCRepo(context.Args().Get(0))
-		if err != nil {
+		proto := context.Args().Get(0)
+		url := context.Args().Get(1)
+		ucc, _ := DefaultUpdateClientConfig()
+		if err := ucc.Add(proto, url); err != nil {
 			fmt.Println(err)
 			return err
 		}
 
-		if err := ucc.Add(repo.String()); err != nil {
-			fmt.Println(err)
-			return err
-		}
-
-		fmt.Printf("Success in adding %s.\n", repo.String())
+		fmt.Printf("Success in adding %s %s.\n", proto, url)
 		return nil
 	},
 }
@@ -59,20 +34,15 @@ var removeCommand = cli.Command{
 	Usage: "remove a repository url",
 
 	Action: func(context *cli.Context) error {
-		var ucc cutils.UpdateClientConfig
-
-		repo, err := cutils.NewUCRepo(context.Args().Get(0))
-		if err != nil {
+		proto := context.Args().Get(0)
+		url := context.Args().Get(1)
+		ucc, _ := DefaultUpdateClientConfig()
+		if err := ucc.Remove(proto, url); err != nil {
 			fmt.Println(err)
 			return err
 		}
 
-		if err := ucc.Remove(repo.String()); err != nil {
-			fmt.Println(err)
-			return err
-		}
-
-		fmt.Printf("Success in removing %s.\n", repo.String())
+		fmt.Printf("Success in removing %s.\n", proto, url)
 		return nil
 	},
 }
@@ -82,24 +52,15 @@ var listCommand = cli.Command{
 	Usage: "list the saved repositories or appliances of a certain repository",
 
 	Action: func(context *cli.Context) error {
-		var ucc cutils.UpdateClientConfig
-
 		if len(context.Args()) == 0 {
-			if err := ucc.Load(); err != nil {
-				fmt.Println(err)
-				return err
-			}
-
+			ucc, _ := DefaultUpdateClientConfig()
 			for _, repo := range ucc.Repos {
 				fmt.Println(repo)
 			}
-		} else if len(context.Args()) == 1 {
-			repo, err := cutils.NewUCRepo(context.Args().Get(0))
-			if err != nil {
-				fmt.Println(err)
-				return err
-			}
-
+		} else if len(context.Args()) == 2 {
+			proto := context.Args().Get(0)
+			url := context.Args().Get(1)
+			repo, _ := NewUpdateClientRepo(proto, url)
 			apps, err := repo.List()
 			if err != nil {
 				fmt.Println(err)
@@ -109,7 +70,9 @@ var listCommand = cli.Command{
 			for _, app := range apps {
 				fmt.Println(app)
 			}
-			ucc.Add(repo.String())
+
+			ucc, _ := DefaultUpdateClientConfig()
+			ucc.Add(proto, url)
 		}
 		return nil
 	},
@@ -121,19 +84,17 @@ var pushCommand = cli.Command{
 
 	Action: func(context *cli.Context) error {
 		//TODO: we can have a default repo
-		if len(context.Args()) != 2 {
-			err := errors.New("wrong syntax: push 'filepath' 'repo url'")
+		if len(context.Args()) != 3 {
+			err := errors.New("wrong syntax: push 'proto' 'repo url' 'local filepath'")
 			fmt.Println(err)
 			return err
 		}
 
-		repo, err := cutils.NewUCRepo(context.Args().Get(1))
-		if err != nil {
-			fmt.Println(err)
-			return err
-		}
+		proto := context.Args().Get(0)
+		url := context.Args().Get(1)
+		file := context.Args().Get(2)
+		repo, _ := NewUpdateClientRepo(proto, url)
 
-		file := context.Args().Get(0)
 		content, err := ioutil.ReadFile(file)
 		if err != nil {
 			fmt.Println(err)
@@ -155,93 +116,50 @@ var pullCommand = cli.Command{
 
 	Action: func(context *cli.Context) error {
 		//TODO: we can have a default repo
-		if len(context.Args()) != 2 {
-			err := errors.New("wrong syntax: pull 'filename' 'repo url'")
+		if len(context.Args()) != 3 {
+			err := errors.New("wrong syntax: pull  'proto' 'repo url' 'name' ")
 			fmt.Println(err)
 			return err
 		}
 
-		repo, err := cutils.NewUCRepo(context.Args().Get(1))
+		proto := context.Args().Get(0)
+		url := context.Args().Get(1)
+		name := context.Args().Get(2)
+		repo, _ := NewUpdateClientRepo(proto, url)
+		ucc, _ := DefaultUpdateClientConfig()
+		repo.SetCacheDir(ucc.GetCacheDir())
+
+		fmt.Println("start to download and verify meta data")
+		err := repo.Sync()
 		if err != nil {
 			fmt.Println(err)
 			return err
 		}
+		fmt.Println("success in downloading and verifying meta data")
 
-		var ucc cutils.UpdateClientConfig
-		ucc.Init()
-
-		file := context.Args().Get(0)
-		fileBytes, err := repo.GetFile(file)
+		fmt.Println("start to download file")
+		savedURL, err := repo.Get(name)
 		if err != nil {
 			fmt.Println(err)
 			return err
 		}
-
-		localFile := filepath.Join(ucc.CacheDir, repo.NRString(), file)
-		if !utils.IsDirExist(filepath.Dir(localFile)) {
-			os.MkdirAll(filepath.Dir(localFile), 0755)
-		}
-		err = ioutil.WriteFile(localFile, fileBytes, 0644)
-		if err != nil {
-			fmt.Println(err)
-			return err
-		}
-		fmt.Println("file downloaded to: ", localFile)
-
-		fmt.Println("start to download public key")
-		pubBytes, err := repo.GetPublicKey()
-		if err != nil {
-			fmt.Println("Fail to get public key: ", err)
-			return err
-		}
-		fmt.Println("success in downloading public key")
-
-		fmt.Println("start to download meta data and signature file")
-		metaBytes, err := repo.GetMeta()
-		if err != nil {
-			fmt.Println("Fail to get meta data: ", err)
-			return err
-		}
-		signBytes, err := repo.GetMetaSign()
-		if err != nil {
-			fmt.Println("Fail to get sign data: ", err)
-			return err
-		}
-		fmt.Println("success in downloading meta data and signature file")
-
-		fmt.Println("start to verify meta data and downloaded file")
-		err = utils.SHA256Verify(pubBytes, metaBytes, signBytes)
-		if err != nil {
-			fmt.Println("Fail to verify meta by public key")
-			return err
-		}
-		fmt.Println("success in verifying meta data and signature file")
+		fmt.Println("file downloaded to: ", savedURL)
 
 		fmt.Println("start to compare the hash value")
-		/*
-			var metas []service.UpdateService
-			fileHash := fmt.Sprintf("%x", sha1.Sum(fileBytes))
-			json.Unmarshal(metaBytes, &metas)
-			for _, meta := range metas {
-				if meta.Name != file {
-					continue
-				}
-
-				if meta.Hash == fileHash {
-					fmt.Println("Congratulations! The file is valid!")
-					return nil
-				}
-
-				err := errors.New("the file is invalid, maybe security issue")
-				fmt.Println(err)
-				return err
-			}
-
-			err = errors.New("something wrong with the server, cannot find the file in the meta data")
+		sha, err := repo.GetSHAS(name)
+		if err != nil {
 			fmt.Println(err)
-
 			return err
-		*/
+		}
+
+		data, _ := ioutil.ReadFile(savedURL)
+		shaCal, _ := utils.SHA512(data)
+
+		if sha != shaCal {
+			message := fmt.Sprintf("The downloaded file is invalid, expected sha: <%s>, but get: <%s>", sha, shaCal)
+			return errors.New(message)
+		}
+		fmt.Println("the downloaded file is valid.")
 		return nil
 	},
 }
