@@ -2,12 +2,14 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"gopkg.in/macaron.v1"
 
 	"github.com/liangchenye/update-service/keymanager"
 	"github.com/liangchenye/update-service/service"
+	"github.com/liangchenye/update-service/storage"
 	"github.com/liangchenye/update-service/utils"
 )
 
@@ -80,38 +82,52 @@ func AppGetMetaSignV1Handler(ctx *macaron.Context) (int, []byte) {
 
 	us, _ := service.DefaultUpdateService("app", "v1", namespace, repository)
 	data, err := us.GetMetaSign()
-	if err == nil {
-		return http.StatusOK, data
+	if err != nil {
+		return httpRet("AppV1 Get Meta Sign", data, err)
 	}
 
-	return httpRet("AppV1 Get Meta Sign", data, err)
+	return http.StatusOK, data
 }
 
 // AppGetFileV1Handler gets the content of a certain app
 func AppGetFileV1Handler(ctx *macaron.Context) (int, []byte) {
-	//	namespace := ctx.Params(":namespace")
-	//	repository := ctx.Params(":repository")
-	//	name := ctx.Params(":name")
-
-	//TODO: data store could use per Storage work just like KeyManager do
-	//	if err == nil {
-	//		return http.StatusOK, data
-	//	}
-
-	return httpRet("AppV1 Get File", nil, nil)
-}
-
-// AppPostFileV1Handler posts the content of a certain app
-func AppPostFileV1Handler(ctx *macaron.Context) (int, []byte) {
 	namespace := ctx.Params(":namespace")
 	repository := ctx.Params(":repository")
 	name := ctx.Params(":name")
 
-	//	data, _ := ctx.Req.Body().Bytes()
-	//TODO: get sha512 from data
-	us, _ := service.DefaultUpdateService("app", "v1", namespace, repository)
-	item, _ := service.NewUpdateServiceItem(name, []string{"TODO"})
-	err := us.Put(item)
+	key := fmt.Sprintf("%s/%s/%s", namespace, repository, name)
+	store, _ := storage.DefaultUpdateServiceStorage()
+	data, err := store.Get(key)
+	if err != nil {
+		return httpRet("AppV1 Get File", data, err)
+	}
 
-	return httpRet("AppV1 Post data", nil, err)
+	return http.StatusOK, data
+}
+
+// AppPutFileV1Handler posts the content of a certain app
+func AppPutFileV1Handler(ctx *macaron.Context) (int, []byte) {
+	namespace := ctx.Params(":namespace")
+	repository := ctx.Params(":repository")
+	name := ctx.Params(":name")
+
+	data, _ := ctx.Req.Body().Bytes()
+	key := fmt.Sprintf("%s/%s/%s", namespace, repository, name)
+	store, _ := storage.DefaultUpdateServiceStorage()
+	err := store.Put(key, data)
+	if err != nil {
+		return httpRet("AppV1 Put data", nil, err)
+	}
+
+	sha, err := utils.SHA512(data)
+	us, _ := service.DefaultUpdateService("app", "v1", namespace, repository)
+	item, _ := service.NewUpdateServiceItem(name, []string{sha})
+	err = us.Put(item)
+	if err != nil {
+		// remove the blob data either
+		store.Delete(key)
+		return httpRet("AppV1 Put data", nil, err)
+	}
+
+	return httpRet("AppV1 Put File", nil, nil)
 }

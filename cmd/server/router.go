@@ -14,11 +14,13 @@ func SetRouters(m *macaron.Macaron) {
 	// App Discovery
 	m.Group("/app", func() {
 		m.Group("/v1", func() {
+			m.Group("/:namespace", func() {
+				m.Get("/pubkey", h.AppGetPublicKeyV1Handler)
+			})
 			m.Group("/:namespace/:repository", func() {
 				// List files
 				m.Get("/", h.AppListFileV1Handler)
 				// Get pub key of the whole repo
-				m.Get("/pubkey", h.AppGetPublicKeyV1Handler)
 				// Get meta data of the whole repo
 				m.Get("/meta", h.AppGetMetaV1Handler)
 				// Get meta signature data of the whole repo
@@ -26,7 +28,7 @@ func SetRouters(m *macaron.Macaron) {
 				// Get file data of a certain app
 				m.Get("/blob/:name", h.AppGetFileV1Handler)
 				// Add file to the repo
-				m.Post("/:name", h.AppPostFileV1Handler)
+				m.Put("/:name", h.AppPutFileV1Handler)
 			})
 		})
 	})
