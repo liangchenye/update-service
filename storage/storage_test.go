@@ -31,7 +31,7 @@ func TestRegisterUpdateServiceStorage(t *testing.T) {
 
 	for _, c := range cases {
 		err := RegisterStorage(c.name, c.f)
-		assert.Equal(t, c.expected, err == nil, "Fail to register key manager")
+		assert.Equal(t, c.expected, err == nil, "Fail to register storage")
 	}
 }
 
