@@ -132,7 +132,7 @@ func main() {
 
 	var content string
 	for k, v := range userCon {
-		c := fmt.Sprintf("%s %d\n", k, v)
+		c := fmt.Sprintf("%s\t%d\n", k, v)
 		content += c
 	}
 	ioutil.WriteFile("finalData", []byte(content), 0644)
