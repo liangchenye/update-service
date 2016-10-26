@@ -109,20 +109,31 @@ var repos = []string{"docker/bender", "docker/birthdaysite", "docker/code-of-con
 }
 
 func main() {
-	pubC := 0
+	uniqRepo := make(map[string]bool)
+	userCon := make(map[string]int)
 	for _, repo := range repos {
+		uniqRepo[repo] = true
+	}
+
+	for repo, _ := range uniqRepo {
 		tmpFile := strings.Replace(repo, "/", "#", 2)
 		repoData, _ := ioutil.ReadFile("githubdata/" + tmpFile)
 
 		var cons []Con
 		json.Unmarshal(repoData, &cons)
 		for _, c := range cons {
-			if c.Login == "crosbymichael" {
-				fmt.Println(c.Contributions)
-				pubC += c.Contributions
-				break
+			if val, ok := userCon[c.Login]; ok {
+				userCon[c.Login] = val + c.Contributions
+			} else {
+				userCon[c.Login] = c.Contributions
 			}
 		}
 	}
-	fmt.Println(pubC)
+
+	var content string
+	for k, v := range userCon {
+		c := fmt.Sprintf("%s %d\n", k, v)
+		content += c
+	}
+	ioutil.WriteFile("finalData", []byte(content), 0644)
 }
