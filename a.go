@@ -8,11 +8,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 type Con struct {
 	Login         string
-	Repos_url     string
+	MonitRepo     string
 	Contributions int
 }
 
@@ -111,13 +112,14 @@ var repos = []string{"docker/bender", "docker/birthdaysite", "docker/code-of-con
 	"docker/vpnkit",
 }
 
-func pullRepo(repo string) {
-	for i := 0; ; i++ {
+func pullRepo(repo string) []Con {
+	var repoCon []Con
+	for i := 1; ; i++ {
 		rawurl := fmt.Sprintf("https://api.github.com/repos/%s/contributors?page=%d", repo, i)
 		fmt.Println(rawurl)
 		res, err := SendHttpRequest("GET", rawurl, nil, nil)
 		if err != nil {
-			return
+			return repoCon
 		}
 		var cons []Con
 		body, err := ioutil.ReadAll(res.Body)
@@ -125,17 +127,42 @@ func pullRepo(repo string) {
 		if len(cons) == 0 {
 			break
 		}
-		pubCons = append(pubCons, cons...)
+		for i, _ := range cons {
+			cons[i].MonitRepo = repo
+		}
+		repoCon = append(repoCon, cons...)
 	}
+
+	return repoCon
 }
 
-var pubCons []Con
-
 func main() {
-	repo := "docker/docker"
-	pullRepo(repo)
+	var pubCons []Con
+	for _, repo := range repos {
+		repoCon := pullRepo(repo)
+		repoData, _ := json.Marshal(repoCon)
+		tmpFile := strings.Replace(repo, "/", "#", 2)
+		ioutil.WriteFile("githubdata/"+tmpFile, repoData, 0644)
 
-	fmt.Println(pubCons)
+		pubCons = append(pubCons, repoCon...)
+	}
+
+	data, _ := json.Marshal(pubCons)
+	ioutil.WriteFile("githubdata/alldata", data, 0644)
+
+	contrib := make(map[string]int)
+
+	for _, c := range pubCons {
+		val, ok := contrib[c.Login]
+		if !ok {
+			contrib[c.Login] = c.Contributions
+		} else {
+			contrib[c.Login] = c.Contributions + val
+		}
+	}
+
+	conData, _ := json.Marshal(contrib)
+	ioutil.WriteFile("githubdata/mapdata", conData, 0644)
 }
 
 func SendHttpRequest(method, rawurl string, body io.Reader, header map[string]string) (*http.Response, error) {
@@ -159,13 +186,11 @@ func SendHttpRequest(method, rawurl string, body io.Reader, header map[string]st
 		return &http.Response{}, fmt.Errorf("bad url schema: %v", url.Scheme)
 	}
 
-	fmt.Println("aa")
 	req, err := http.NewRequest(method, url.String(), body)
-	fmt.Println("aa1")
+	req.SetBasicAuth("initlove", "david840318")
 	if err != nil {
 		return &http.Response{}, err
 	}
-	fmt.Println("aa2")
 	req.URL.RawQuery = req.URL.Query().Encode()
 	for k, v := range header {
 		req.Header.Set(k, v)
